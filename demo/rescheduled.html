@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>#acm-general · Tech Night rescheduled · AMEND demo</title>
+    <link rel="stylesheet" href="demo.css" />
+    <script src="demo.js"></script>
+    <style>
+      body { background: #1a1d21; color: #d1d2d3; display: flex; min-height: 100vh; font-size: 15px; }
+      aside { width: 230px; background: #19171d; border-right: 1px solid #2b2a30; padding: 18px 12px; flex-shrink: 0; }
+      aside h2 { color: #fff; font-size: 17px; margin: 0 8px 18px; }
+      aside p { margin: 2px 0; padding: 5px 10px; border-radius: 6px; color: #b9babd; }
+      aside p.on { background: #1164a3; color: #fff; }
+      main { flex: 1; display: flex; flex-direction: column; }
+      header { padding: 14px 22px; border-bottom: 1px solid #2b2a30; color: #fff; font-weight: 700; }
+      header small { color: #9a9b9e; font-weight: 400; margin-left: 8px; }
+      .msgs { padding: 18px 22px 90px; display: grid; gap: 18px; }
+      .msg { display: grid; grid-template-columns: 40px 1fr; gap: 10px; }
+      .av { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; color: #fff; }
+      .name { color: #fff; font-weight: 700; }
+      .time { color: #8b8c8f; font-size: 12px; margin-left: 6px; font-weight: 400; }
+      .text { margin-top: 2px; line-height: 1.45; }
+      .react { display: inline-block; margin-top: 6px; background: #2b2d31; border: 1px solid #3a3c41; border-radius: 12px; padding: 1px 8px; font-size: 12px; }
+      .hl { background: rgba(255, 204, 0, 0.08); border-left: 3px solid #e8b100; margin-left: -22px; padding-left: 19px; }
+      @media (max-width: 700px) { aside { display: none; } }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <h2>ACM @ Illinois</h2>
+      <p>#announcements</p>
+      <p class="on"># acm-general</p>
+      <p># sigai</p>
+      <p># random</p>
+    </aside>
+    <main>
+      <header># acm-general <small>142 members</small></header>
+      <section class="msgs">
+        <div class="msg"><div class="av" style="background:#4a8f6a">JL</div><div><span class="name">Jordan Lee</span><span class="time">2:41 PM</span><div class="text">anyone have the slides from last week's talk?</div></div></div>
+        <div class="msg"><div class="av" style="background:#7c5cbf">MP</div><div><span class="name">Maya Patel</span><span class="time">2:44 PM</span><div class="text">pinned them in #sigai 📌</div></div></div>
+        <div class="msg hl"><div class="av" style="background:#d1603d">AR</div><div><span class="name">Alex Rivera · ACM Officer</span><span class="time">3:02 PM</span><div class="text"><b>📣 Schedule change:</b> Tech Night is now at <b>5:30 PM instead of 4:00</b>, same place! Room got double-booked. Food still provided 🍕</div><span class="react">🙌 23</span> <span class="react">👍 11</span></div></div>
+        <div class="msg"><div class="av" style="background:#2d7dd2">SK</div><div><span class="name">Sam Kim</span><span class="time">3:05 PM</span><div class="text">perfect, I have lab until 5 anyway</div></div></div>
+      </section>
+    </main>
+    <nav class="demo-nav"><a href="index.html">All demos</a><a href="create.html">1 Create</a><a href="rescheduled.html" aria-current="page">2 Update</a><a href="cancelled.html">3 Delete</a><a href="ambiguous.html">4 Ambiguous</a></nav>
+  </body>
+</html>

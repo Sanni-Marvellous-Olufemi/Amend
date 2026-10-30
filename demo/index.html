@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AMEND demo announcements</title>
+    <link rel="stylesheet" href="demo.css" />
+    <style>
+      body { background: #f7f6f2; color: #202b25; padding: 56px 24px; }
+      main { max-width: 640px; margin: 0 auto; }
+      h1 { font-size: 40px; letter-spacing: -0.04em; margin: 0; color: #1f4034; }
+      h1 span { color: #287b54; }
+      p.lead { color: #5c665f; font-size: 16px; line-height: 1.5; }
+      ol { padding: 0; list-style: none; display: grid; gap: 10px; margin-top: 28px; }
+      li a {
+        display: flex; justify-content: space-between; align-items: center; gap: 16px;
+        background: #fff; border: 1px solid rgba(32,43,37,.09); border-radius: 16px; padding: 18px 20px;
+        text-decoration: none; transition: border-color .15s;
+      }
+      li a:hover { border-color: #287b54; }
+      li b { display: block; font-size: 16px; }
+      li small { color: #5c665f; font-size: 13.5px; }
+      .tag { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #e7f1ea; color: #1f4034; white-space: nowrap; }
+      .tag.del { background: #fdecea; color: #b42318; }
+      .tag.amb { background: #fdf3e1; color: #9a5b0b; }
+      kbd { background: #fff; border: 1px solid rgba(0,0,0,.15); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; font-family: inherit; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>amend<span>.</span> demo</h1>
+      <p class="lead">
+        Open a scenario, then press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>6</kbd> (or click the AMEND toolbar icon).
+        Run them in order: the cancellation removes the workshop created in scene 1.
+      </p>
+      <ol>
+        <li><a href="create.html"><span><b>1 · Event flyer</b><small>Robotics Workshop, Nov 12, 3 PM, Engineering Lab</small></span><span class="tag">Create</span></a></li>
+        <li><a href="rescheduled.html"><span><b>2 · Group chat</b><small>“Tech Night is now at 5:30 PM instead of 4:00”</small></span><span class="tag">Update</span></a></li>
+        <li><a href="cancelled.html"><span><b>3 · Email</b><small>“The Robotics Workshop has been cancelled”</small></span><span class="tag del">Delete</span></a></li>
+        <li><a href="ambiguous.html"><span><b>4 · Vague announcement</b><small>“Friday's ACM event is moving…” (two events match)</small></span><span class="tag amb">Ambiguous</span></a></li>
+      </ol>
+    </main>
+  </body>
+</html>

@@ -41,8 +41,8 @@ SCENARIOS: dict[str, ModelOutput] = {
         proposals=[
             ModelProposal(
                 intent="DELETE",
-                event=ModelEvent(title="Robotics Workshop"),
-                evidence="Unfortunately, the Robotics Workshop has been cancelled.",
+                event=ModelEvent(title="Robotics Workshop", date="2026-11-12", year_visible=False),
+                evidence="Unfortunately, the Robotics Workshop on Thursday, November 12 has been cancelled.",
                 cancellation_confidence="confirmed",
             )
         ]

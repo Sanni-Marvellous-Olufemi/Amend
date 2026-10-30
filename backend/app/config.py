@@ -1,5 +1,21 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
+
+
+def _load_dotenv(path: Path) -> None:
+    """Minimal .env support; real environment variables take precedence."""
+    if not path.is_file():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
 def _bool(name: str, default: bool = False) -> bool:
