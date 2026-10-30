@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AMEND Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ===========================================
+   THEME TOKENS
+   Layout: fixed 1920x1080 stage; paper slides carry the product,
+   forest slides carry the big statements. The side panel UI is the
+   recurring visual device.
+   Single committed brand look (AMEND tokens), so no dark-mode swap.
+   =========================================== */
+:root {
+    --paper: #F7F6F2;        /* AMEND background */
+    --forest: #1F4034;       /* AMEND primary */
+    --leaf: #287B54;         /* AMEND accent */
+    --ink: #202B25;          /* AMEND main text */
+    --mute: #5F6D64;         /* green-biased grey for secondary text */
+    --card: #FFFFFF;
+    --line: rgba(32, 43, 37, 0.10);
+    --mint: #D6E9DC;         /* soft leaf tint */
+    --on-forest: #EEF4EF;
+    --on-forest-mute: #A9C2B3;
+    --on-forest-line: rgba(238, 244, 239, 0.14);
+    --danger: #A93B2B;
+    --danger-tint: #F8E9E5;
+    --amber: #9A6413;
+    --amber-tint: #F6ECD9;
+    --stage-bg: #E7E5DE;
+    --slide-bg: var(--paper);
+
+    --font-display: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', sans-serif;
+    --font-body: 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    color-scheme: light;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   (viewport-base.css from Frontend Slides, in full)
+   =========================================== */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--slide-bg, #fff);
+}
+.slide.active,
+.slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+@media print {
+    html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+    .deck-viewport { position: static; overflow: visible; background: #fff; }
+    .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+    .slide {
+        position: relative; display: block !important; visibility: visible !important;
+        opacity: 1 !important; pointer-events: auto !important;
+        width: 1920px; height: 1080px; break-after: page; page-break-after: always;
+    }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    .deck-controls { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* ===========================================
+   SLIDE SURFACES
+   Each slide sets its own fg/bg so components work on paper and forest.
+   =========================================== */
+body { font-family: var(--font-body); color: var(--ink); }
+
+.slide {
+    --s-bg: var(--paper);
+    --s-fg: var(--ink);
+    --s-mute: var(--mute);
+    --s-line: var(--line);
+    --s-accent: var(--leaf);
+    background: var(--s-bg);
+    color: var(--s-fg);
+}
+.slide.dark {
+    --s-bg: var(--forest);
+    --s-fg: var(--on-forest);
+    --s-mute: var(--on-forest-mute);
+    --s-line: var(--on-forest-line);
+    --s-accent: #7FC79D;
+    background:
+        radial-gradient(ellipse 1100px 700px at 85% 110%, rgba(40, 123, 84, 0.55), transparent 70%),
+        radial-gradient(ellipse 900px 600px at 0% -10%, rgba(255, 255, 255, 0.06), transparent 70%),
+        var(--forest);
+}
+/* faint dot grid: a nod to a calendar's day grid */
+.slide.paper-grid {
+    background:
+        radial-gradient(circle, rgba(31, 64, 52, 0.09) 1.6px, transparent 1.8px) 0 0 / 48px 48px,
+        var(--paper);
+}
+
+.frame {
+    position: absolute;
+    inset: 110px 140px 120px;
+}
+
+/* ---- footer chrome on every slide ---- */
+.foot {
+    position: absolute;
+    left: 140px;
+    right: 140px;
+    bottom: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font: 500 20px/1 var(--font-mono);
+    color: var(--s-mute);
+    letter-spacing: 0.04em;
+}
+.foot .mark { font: 700 26px/1 var(--font-display); letter-spacing: -0.03em; color: var(--s-fg); }
+.foot .mark i { font-style: normal; color: var(--s-accent); }
+
+/* ===========================================
+   TYPE SCALE (stage px)
+   =========================================== */
+.eyebrow {
+    font: 600 22px/1 var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--s-accent);
+}
+.h-xl { font: 700 132px/0.95 var(--font-display); letter-spacing: -0.045em; text-wrap: balance; }
+.h-lg { font: 700 96px/1.0 var(--font-display); letter-spacing: -0.04em; text-wrap: balance; }
+.h-md { font: 650 72px/1.04 var(--font-display); letter-spacing: -0.035em; text-wrap: balance; }
+.lede { font: 400 36px/1.4 var(--font-body); color: var(--s-mute); max-width: 1100px; text-wrap: pretty; }
+.body { font: 400 30px/1.45 var(--font-body); color: var(--s-mute); text-wrap: pretty; }
+.mono { font-family: var(--font-mono); }
+.accent { color: var(--s-accent); }
+
+/* ===========================================
+   ANIMATIONS
+   .reveal children animate in when their slide gets .visible.
+   Stagger with style="--d:N".
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
+    transition-delay: calc(var(--d, 0) * 90ms);
+}
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.94);
+    transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+    transition-delay: calc(var(--d, 0) * 90ms);
+}
+.slide.visible .reveal,
+.slide.visible .reveal-scale { opacity: 1; transform: none; }
+
+/* ===========================================
+   KEYCAPS (the shortcut is the product's front door)
+   =========================================== */
+.keys { display: flex; gap: 28px; }
+.kbd {
+    display: grid;
+    place-items: center;
+    width: 176px;
+    height: 176px;
+    border-radius: 38px;
+    background: linear-gradient(180deg, #FFFFFF, #EFEDE6);
+    border: 1px solid var(--line);
+    box-shadow: 0 3px 0 #D8D5CB, 0 22px 44px rgba(31, 64, 52, 0.14);
+    font: 500 84px/1 var(--font-mono);
+    color: var(--forest);
+}
+.slide.dark .kbd {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+    border-color: var(--on-forest-line);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25), 0 22px 44px rgba(0, 0, 0, 0.25);
+    color: var(--on-forest);
+}
+.slide.visible .kbd.press { animation: keypress 0.5s var(--ease-out-expo) both; animation-delay: calc(0.6s + var(--k, 0) * 0.12s); }
+@keyframes keypress {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(6px); box-shadow: 0 0 0 #D8D5CB, 0 8px 18px rgba(31, 64, 52, 0.12); }
+    100% { transform: translateY(0); }
+}
+
+/* ===========================================
+   SIDE PANEL MOCK (the product UI)
+   =========================================== */
+.panel {
+    width: 640px;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 36px 80px rgba(31, 64, 52, 0.16);
+    padding: 34px 36px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: center; }
+.panel-head .wm { font: 700 34px/1 var(--font-display); letter-spacing: -0.04em; color: var(--forest); }
+.panel-head .wm i { font-style: normal; color: var(--leaf); }
+.pill {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 9px 16px; border-radius: 999px;
+    font: 500 18px/1 var(--font-body);
+    background: var(--mint); color: var(--forest);
+}
+.pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--leaf); }
+.panel .kicker { font: 600 18px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--leaf); }
+.panel .kicker.warn { color: var(--amber); }
+.panel .kicker.del { color: var(--danger); }
+.panel .ev-title { font: 650 46px/1.05 var(--font-display); letter-spacing: -0.03em; color: var(--ink); margin-top: -8px; }
+.panel .ev-meta { font: 400 22px/1.3 var(--font-body); color: var(--mute); margin-top: -12px; }
+
+.compare { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: center; gap: 12px; }
+.compare .box { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: var(--paper); }
+.compare .box.after { background: var(--mint); border-color: transparent; }
+.compare .lbl { font: 600 15px/1 var(--font-mono); letter-spacing: 0.14em; color: var(--mute); }
+.compare .after .lbl { color: var(--forest); }
+.compare .t { font: 650 56px/1.1 var(--font-display); letter-spacing: -0.03em; margin-top: 10px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.compare .d { font: 400 20px/1.2 var(--font-body); color: var(--mute); margin-top: 4px; }
+.compare .arrow { font: 500 34px/1 var(--font-mono); color: var(--leaf); text-align: center; }
+.strike { position: relative; display: inline-block; color: var(--mute); }
+.strike::after {
+    content: ""; position: absolute; left: -4px; right: -4px; top: 54%; height: 4px;
+    background: var(--danger); border-radius: 2px;
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.6s var(--ease-out-expo) 0.9s;
+}
+.slide.visible .strike::after { transform: scaleX(1); }
+.pop { display: inline-block; opacity: 0; transform: translateY(10px); transition: all 0.6s var(--ease-out-expo) 1.25s; }
+.slide.visible .pop { opacity: 1; transform: none; }
+
+.why { border-top: 1px solid var(--line); padding-top: 18px; }
+.why .lbl { font: 600 15px/1 var(--font-mono); letter-spacing: 0.14em; color: var(--mute); }
+.why q { display: block; margin-top: 10px; font: 500 26px/1.35 var(--font-body); color: var(--ink); quotes: "\201C" "\201D"; }
+.unchanged { font: 400 19px/1.3 var(--font-body); color: var(--mute); }
+
+.btn {
+    height: 72px; border-radius: 16px; border: 0;
+    display: grid; place-items: center;
+    font: 600 26px/1 var(--font-body);
+    background: var(--forest); color: #fff;
+}
+.btn.del { background: var(--danger); }
+.btn.ghost { background: var(--paper); color: var(--mute); border: 1px solid var(--line); }
+
+.radio-list { display: flex; flex-direction: column; gap: 12px; }
+.radio {
+    display: grid; grid-template-columns: 30px 1fr; gap: 16px; align-items: center;
+    padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--paper);
+}
+.radio .dot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #B9C2BC; background: #fff; }
+.radio.on { border-color: var(--leaf); background: #fff; box-shadow: 0 0 0 3px rgba(40, 123, 84, 0.15); }
+.radio.on .dot { border: 8px solid var(--leaf); }
+.radio .n { font: 600 25px/1.2 var(--font-body); color: var(--ink); }
+.radio .m { font: 400 20px/1.3 var(--font-mono); color: var(--mute); margin-top: 4px; }
+
+.check {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; border-radius: 14px; background: var(--danger-tint);
+    font: 600 24px/1.2 var(--font-body); color: var(--danger);
+}
+.check .box2 { width: 30px; height: 30px; border-radius: 8px; background: var(--danger); display: grid; place-items: center; color: #fff; font: 700 20px/1 var(--font-body); }
+
+.chip {
+    display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px;
+    font: 500 18px/1 var(--font-body); background: var(--amber-tint); color: var(--amber);
+}
+
+/* ===========================================
+   SLIDE 1: TITLE
+   =========================================== */
+.s-title .wordmark {
+    font: 800 340px/0.82 var(--font-display);
+    letter-spacing: -0.065em;
+    color: var(--forest);
+    margin-left: -14px;
+}
+.s-title .wordmark i { font-style: normal; color: var(--leaf); }
+.s-title .tag { font: 500 64px/1.1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); margin-top: 56px; }
+.s-title .meta { position: absolute; left: 0; bottom: 0; display: flex; gap: 44px; font: 500 22px/1 var(--font-mono); color: var(--mute); letter-spacing: 0.04em; }
+.s-title .meta span + span::before { content: "·"; margin-right: 44px; color: var(--leaf); }
+.s-title .keys-wrap { position: absolute; right: 0; top: 150px; display: flex; flex-direction: column; align-items: flex-end; gap: 34px; }
+.s-title .keys-cap { font: 500 24px/1.4 var(--font-body); color: var(--mute); text-align: right; }
+.glow { position: absolute; width: 900px; height: 900px; right: -200px; top: -120px; border-radius: 50%; background: radial-gradient(circle, rgba(40, 123, 84, 0.16), transparent 62%); pointer-events: none; }
+
+/* ===========================================
+   SLIDE 2: PROBLEM (three announcement sources)
+   =========================================== */
+.sources { position: absolute; left: 0; right: 0; top: 380px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px; align-items: start; }
+.src-label { font: 600 18px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); margin-bottom: 18px; }
+.flyer {
+    background: var(--forest); color: var(--on-forest); border-radius: 18px; padding: 40px 40px 44px;
+    box-shadow: 0 24px 50px rgba(31, 64, 52, 0.18); transform: rotate(-2deg);
+}
+.flyer .f-top { font: 600 18px/1 var(--font-mono); letter-spacing: 0.14em; color: #9FD4B4; }
+.flyer .f-title { font: 800 64px/0.95 var(--font-display); letter-spacing: -0.04em; margin-top: 18px; }
+.flyer .f-row { display: flex; gap: 22px; margin-top: 26px; font: 500 24px/1.2 var(--font-body); color: var(--on-forest-mute); flex-wrap: wrap; }
+.flyer .f-row b { color: var(--on-forest); font-weight: 600; }
+.chat { display: flex; flex-direction: column; gap: 14px; }
+.bubble { max-width: 460px; padding: 20px 26px; border-radius: 26px; font: 400 27px/1.35 var(--font-body); background: #E6E9E5; color: var(--ink); }
+.bubble.me { align-self: flex-end; background: var(--leaf); color: #fff; }
+.bubble .who { display: block; font: 600 17px/1 var(--font-body); color: var(--mute); margin-bottom: 8px; }
+.mail { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 30px 34px; box-shadow: 0 18px 40px rgba(31, 64, 52, 0.08); }
+.mail .from { font: 600 20px/1.2 var(--font-body); color: var(--ink); }
+.mail .subj { font: 650 30px/1.2 var(--font-display); letter-spacing: -0.02em; color: var(--ink); margin-top: 12px; }
+.mail .txt { font: 400 24px/1.45 var(--font-body); color: var(--mute); margin-top: 12px; }
+.s-problem .after-note { position: absolute; left: 0; bottom: 0; font: 400 32px/1.4 var(--font-body); color: var(--mute); max-width: 1300px; }
+.s-problem .after-note b { color: var(--ink); font-weight: 600; }
+
+/* ===========================================
+   SLIDE 3: THE INTERACTION
+   =========================================== */
+.s-flow .keys { margin-top: 70px; }
+.s-flow .kbd { width: 210px; height: 210px; font-size: 100px; border-radius: 44px; }
+.steps { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--s-line); }
+.steps > div { padding: 34px 30px 0 0; }
+.steps .n { font: 500 20px/1 var(--font-mono); color: var(--s-accent); letter-spacing: 0.08em; }
+.steps .t { font: 650 50px/1.05 var(--font-display); letter-spacing: -0.03em; margin-top: 18px; }
+.steps .d { font: 400 24px/1.4 var(--font-body); color: var(--s-mute); margin-top: 14px; max-width: 360px; }
+
+/* ===========================================
+   SLIDE 4: THREE ACTIONS
+   =========================================== */
+.actions { position: absolute; left: 0; right: 0; top: 300px; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+.act { border-radius: 22px; padding: 44px 42px; display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--line); }
+.act .verb { font: 800 92px/1 var(--font-display); letter-spacing: -0.05em; color: var(--forest); }
+.act .api { font: 500 22px/1 var(--font-mono); color: var(--leaf); margin-top: 18px; }
+.act q { display: block; margin-top: auto; font: 500 30px/1.38 var(--font-body); color: var(--ink); quotes: "\201C" "\201D"; }
+.act .res { font: 400 23px/1.4 var(--font-body); color: var(--mute); margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.act.del { background: var(--danger-tint); border-color: transparent; }
+.act.del .verb { color: var(--danger); }
+.act.del .api { color: var(--danger); }
+.act.del .res { border-color: rgba(169, 59, 43, 0.18); }
+
+/* ===========================================
+   SLIDE 5: UPDATE REVIEW (product moment)
+   =========================================== */
+.s-review .left { position: absolute; left: 0; top: 0; width: 820px; }
+.s-review .left .lede { margin-top: 36px; }
+.s-review .points { margin-top: 56px; display: flex; flex-direction: column; gap: 26px; }
+.point { display: grid; grid-template-columns: 44px 1fr; gap: 18px; font: 400 29px/1.35 var(--font-body); color: var(--mute); }
+.point b { color: var(--ink); font-weight: 600; }
+.point .g { width: 44px; height: 44px; border-radius: 12px; background: var(--mint); color: var(--forest); display: grid; place-items: center; font: 600 22px/1 var(--font-mono); }
+.s-review .panel { position: absolute; right: 0; top: -20px; }
+
+/* ===========================================
+   SLIDE 6: AMBIGUITY + DELETE
+   =========================================== */
+.pair { position: absolute; left: 0; right: 0; top: 236px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+.pair .panel { width: 100%; gap: 16px; padding: 28px 32px 30px; }
+.pair .radio { padding: 14px 18px; }
+.pair .btn { height: 64px; }
+.pair .cap { font: 400 24px/1.4 var(--font-body); color: var(--mute); margin-top: 20px; padding-left: 4px; }
+.pair .cap b { color: var(--ink); font-weight: 600; }
+
+/* ===========================================
+   SLIDE 7: ARCHITECTURE DIAGRAM
+   Nodes are absolutely placed in slide coordinates; the SVG draws arrows.
+   =========================================== */
+.arch { position: absolute; inset: 0; }
+.arch svg { position: absolute; inset: 0; width: 1920px; height: 1080px; max-width: none; max-height: none; }
+.arch .wire { fill: none; stroke: var(--leaf); stroke-width: 3; }
+.arch .wire.dash { stroke-dasharray: 8 8; }
+.arch .wl { fill: var(--mute); font: 500 19px var(--font-mono); }
+.node {
+    position: absolute; border-radius: 20px; background: var(--card); border: 1px solid var(--line);
+    padding: 26px 28px; display: flex; flex-direction: column; justify-content: center; gap: 10px;
+    box-shadow: 0 16px 36px rgba(31, 64, 52, 0.07);
+}
+.node .k { font: 600 16px/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--leaf); }
+.node .n { font: 650 34px/1.1 var(--font-display); letter-spacing: -0.02em; color: var(--ink); }
+.node .d { font: 400 21px/1.35 var(--font-body); color: var(--mute); }
+.node.hero { background: var(--forest); border-color: transparent; box-shadow: 0 28px 60px rgba(31, 64, 52, 0.28); }
+.node.hero .k { color: #9FD4B4; }
+.node.hero .n { color: var(--on-forest); font-size: 40px; }
+.node.hero .d { color: var(--on-forest-mute); }
+.node.hero ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.node.hero li { font: 500 21px/1 var(--font-body); color: var(--on-forest); display: flex; gap: 12px; align-items: center; }
+.node.hero li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #7FC79D; }
+.mac-zone {
+    position: absolute; border: 2px dashed rgba(40, 123, 84, 0.45); border-radius: 26px;
+    background: rgba(214, 233, 220, 0.35); padding: 24px 26px;
+}
+.mac-zone .zl { font: 600 17px/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--leaf); }
+.chain { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.chain div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; font: 600 24px/1 var(--font-body); color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+.chain div span { font: 400 17px/1 var(--font-mono); color: var(--mute); }
+.arch-foot { position: absolute; left: 140px; right: 140px; top: 930px; display: flex; gap: 70px; }
+.arch-foot div { font: 500 25px/1.3 var(--font-body); color: var(--ink); display: flex; gap: 14px; align-items: center; }
+.arch-foot div::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--leaf); flex: none; }
+
+/* ===========================================
+   SLIDE 8 / 13 / 16: STATEMENT SLIDES (forest)
+   =========================================== */
+.statement { position: absolute; left: 0; top: 140px; max-width: 1500px; }
+.statement .h-xl { margin-top: 34px; }
+.statement .lede { margin-top: 48px; max-width: 1150px; }
+.split-word { color: var(--s-accent); }
+
+/* ===========================================
+   SLIDE 9: THE MODEL
+   =========================================== */
+.model-name { font: 800 150px/0.92 var(--font-display); letter-spacing: -0.055em; color: var(--forest); margin-top: 34px; }
+.model-name span { color: var(--leaf); }
+.facts { position: absolute; left: 0; right: 0; top: 480px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+.facts > div { padding: 30px 34px 0 0; }
+.facts .v { font: 650 58px/1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.facts .l { font: 400 23px/1.4 var(--font-body); color: var(--mute); margin-top: 14px; max-width: 330px; }
+.term {
+    position: absolute; left: 0; bottom: 0; width: 1040px; border-radius: 18px; background: #16241D; color: #D9E8DE;
+    padding: 28px 34px; font: 400 26px/1.6 var(--font-mono); box-shadow: 0 24px 50px rgba(22, 36, 29, 0.25);
+}
+.term .p { color: #7FC79D; }
+.term .c { color: #8DA597; }
+.fallback { position: absolute; right: 0; bottom: 18px; width: 540px; font: 400 24px/1.45 var(--font-body); color: var(--mute); }
+.fallback b { color: var(--ink); font-weight: 600; }
+
+/* ===========================================
+   SLIDE 10: TIME IS THE HARD PART
+   =========================================== */
+.time-row { position: absolute; left: 0; right: 0; top: 330px; display: grid; grid-template-columns: 520px 70px 560px 70px 1fr; align-items: center; }
+.time-row .arrow { font: 500 44px/1 var(--font-mono); color: var(--leaf); text-align: center; }
+.quote-card { background: #E6E9E5; border-radius: 30px; padding: 30px 34px; font: 500 40px/1.3 var(--font-body); color: var(--ink); }
+.quote-card small { display: block; font: 600 17px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--mute); margin-bottom: 14px; }
+.json { background: #16241D; color: #D9E8DE; border-radius: 18px; padding: 28px 32px; font: 400 25px/1.55 var(--font-mono); }
+.json .k { color: #9FD4B4; }
+.json .nul { color: #E3A27F; }
+.json .s { color: #F2E3B3; }
+.resolved { background: var(--mint); border-radius: 22px; padding: 30px 34px; }
+.resolved small { display: block; font: 600 17px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--forest); margin-bottom: 14px; }
+.resolved .t { font: 650 60px/1 var(--font-display); letter-spacing: -0.03em; color: var(--forest); font-variant-numeric: tabular-nums; }
+.resolved .z { font: 500 22px/1.3 var(--font-mono); color: var(--forest); margin-top: 12px; opacity: 0.85; }
+.rules { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 50px; border-top: 1px solid var(--line); padding-top: 34px; }
+.rules .t { font: 650 32px/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); }
+.rules .d { font: 400 23px/1.45 var(--font-body); color: var(--mute); margin-top: 12px; }
+
+/* ===========================================
+   SLIDE 11: MATCHING (dots drawn to scale: 250 -> 5 -> 1)
+   =========================================== */
+.funnel { position: absolute; left: 0; right: 0; top: 300px; display: grid; grid-template-columns: 640px 120px 420px 120px 1fr; align-items: start; }
+.funnel .arrow { font: 500 44px/1 var(--font-mono); color: var(--leaf); text-align: center; height: 230px; display: grid; place-items: center; }
+.funnel .vis { height: 230px; display: flex; align-items: center; }
+.dotgrid { display: grid; grid-template-columns: repeat(25, 16px); gap: 9px; }
+.dotgrid i { width: 16px; height: 16px; border-radius: 50%; background: #C7D1CA; display: block; }
+.dotgrid.five { grid-template-columns: repeat(5, 40px); gap: 22px; }
+.dotgrid.five i { width: 40px; height: 40px; background: #7FB896; }
+.onedot { width: 92px; height: 92px; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 16px rgba(40, 123, 84, 0.15), 0 0 0 34px rgba(40, 123, 84, 0.07); }
+.fcap { margin-top: 34px; }
+.fcap .v { font: 650 56px/1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); }
+.fcap .l { font: 400 24px/1.4 var(--font-body); color: var(--mute); margin-top: 10px; }
+.fcap .l .mono { font-size: 21px; color: var(--leaf); }
+.match-foot { position: absolute; left: 0; bottom: 0; font: 400 28px/1.4 var(--font-body); color: var(--mute); }
+.match-foot b { color: var(--ink); font-weight: 600; }
+
+/* ===========================================
+   SLIDE 12: GUARDRAILS
+   =========================================== */
+.guards { position: absolute; left: 0; right: 0; top: 290px; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 28px; }
+.guard { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 32px 34px; display: flex; flex-direction: column; }
+.guard .if { font: 500 23px/1.35 var(--font-body); color: var(--mute); }
+.guard .then { font: 650 46px/1.05 var(--font-display); letter-spacing: -0.03em; color: var(--forest); margin-top: 14px; }
+.guard .how { font: 400 19px/1.3 var(--font-mono); color: var(--leaf); margin-top: auto; padding-top: 18px; }
+
+/* ===========================================
+   SLIDE 13: PRIVACY
+   =========================================== */
+.priv { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--s-line); }
+.priv > div { padding: 30px 36px 0 0; }
+.priv .t { font: 650 34px/1.12 var(--font-display); letter-spacing: -0.02em; color: var(--s-fg); }
+.priv .d { font: 400 22px/1.4 var(--font-body); color: var(--s-mute); margin-top: 12px; }
+
+/* ===========================================
+   SLIDE 14: FIVE-HOUR BUILD (bar widths are to scale: 1640px = 300 min)
+   =========================================== */
+.timeline { position: absolute; left: 0; right: 0; top: 380px; }
+.tl-bar { display: flex; height: 112px; border-radius: 18px; overflow: hidden; gap: 4px; }
+.tl-bar div { background: #E2E6DF; position: relative; display: flex; align-items: flex-end; padding: 14px 16px; font: 500 18px/1 var(--font-mono); color: var(--mute); }
+.tl-bar div.crit { background: var(--forest); color: #CFE6D7; }
+.tl-ticks { display: flex; gap: 4px; margin-bottom: 14px; }
+.tl-ticks div { font: 500 20px/1 var(--font-mono); color: var(--mute); }
+.tl-labels { display: flex; gap: 4px; margin-top: 22px; }
+.tl-labels div { padding-right: 18px; }
+.tl-labels .t { font: 650 25px/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--ink); }
+.tl-labels .d { font: 400 19px/1.35 var(--font-body); color: var(--mute); margin-top: 10px; }
+.tl-labels .crit .t { color: var(--forest); }
+.crit-note { position: absolute; left: 0; bottom: 0; display: flex; gap: 22px; align-items: center; font: 400 27px/1.4 var(--font-body); color: var(--mute); max-width: 1600px; }
+.crit-note .sw { width: 30px; height: 30px; border-radius: 8px; background: var(--forest); flex: none; }
+.crit-note b { color: var(--ink); font-weight: 600; }
+
+/* ===========================================
+   SLIDE 15: DEMO SCENES
+   =========================================== */
+.scenes { position: absolute; left: 0; right: 0; top: 290px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+.scene { border-top: 4px solid var(--forest); padding-top: 28px; }
+.scene.del { border-color: var(--danger); }
+.scene .n { font: 500 20px/1 var(--font-mono); letter-spacing: 0.1em; color: var(--mute); }
+.scene .t { font: 800 80px/1 var(--font-display); letter-spacing: -0.045em; color: var(--forest); margin-top: 16px; }
+.scene.del .t { color: var(--danger); }
+.scene ol { list-style: none; counter-reset: s; margin-top: 30px; display: flex; flex-direction: column; gap: 16px; }
+.scene li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr; font: 400 26px/1.38 var(--font-body); color: var(--mute); }
+.scene li::before { content: counter(s); font: 500 20px/1.7 var(--font-mono); color: var(--leaf); }
+.scene li b { color: var(--ink); font-weight: 600; }
+.demo-foot { position: absolute; left: 0; bottom: 0; display: flex; gap: 18px; flex-wrap: wrap; }
+.demo-foot span { padding: 14px 22px; border-radius: 999px; background: var(--mint); color: var(--forest); font: 500 23px/1 var(--font-body); }
+
+/* ===========================================
+   SLIDE 16: CLOSE
+   =========================================== */
+.s-close .wordmark { font: 800 220px/0.85 var(--font-display); letter-spacing: -0.065em; color: var(--on-forest); }
+.s-close .wordmark i { font-style: normal; color: #7FC79D; }
+.s-close .closing { font: 600 70px/1.08 var(--font-display); letter-spacing: -0.035em; color: var(--on-forest); max-width: 1500px; margin-top: 70px; text-wrap: balance; }
+.s-close .closing-2 { font: 400 36px/1.4 var(--font-body); color: var(--on-forest-mute); max-width: 1250px; margin-top: 34px; }
+.s-close .credits { position: absolute; left: 0; bottom: 0; display: flex; gap: 40px; font: 500 22px/1 var(--font-mono); color: var(--on-forest-mute); letter-spacing: 0.03em; }
+
+/* ===========================================
+   PRESENTER CHROME (outside the stage)
+   =========================================== */
+.progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--leaf); width: 0; transition: width 0.4s var(--ease-out-expo); z-index: 1000; }
+.deck-controls {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 6px; padding: 6px;
+    background: rgba(255, 255, 255, 0.86); border: 1px solid var(--line); border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(31, 64, 52, 0.12);
+    opacity: 0; transition: opacity 0.3s;
+}
+.deck-viewport:hover ~ .deck-controls, .deck-controls:hover, .deck-controls:focus-within, .deck-controls.show { opacity: 1; }
+.deck-controls button {
+    width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; cursor: pointer;
+    font: 500 18px/1 var(--font-mono); color: var(--forest);
+}
+.deck-controls button:hover { background: var(--mint); }
+.deck-controls button:focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+.deck-controls .count { font: 500 14px/1 var(--font-mono); color: var(--mute); padding: 0 8px; min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+.deck-controls button.wide { width: auto; padding: 0 16px; border-radius: 999px; font: 600 13px/1 var(--font-body); letter-spacing: 0.02em; }
+[hidden] { display: none !important; }
+
+/* ===========================================
+   SPEAKER NOTES DRAWER (press N)
+   Sits under the stage; the stage rescales to the space above it.
+   =========================================== */
+:root { --drawer-h: min(40vh, 320px); --night: #16241D; }
+body.notes-open .deck-controls { opacity: 1; bottom: calc(var(--drawer-h) + 14px); }
+.notes-drawer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100;
+    height: var(--drawer-h);
+    background: var(--night); color: var(--on-forest);
+    border-top: 1px solid var(--on-forest-line);
+    padding-block: 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px;
+}
+.nd-meta { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.nd-num { font: 500 13px/1 var(--font-mono); letter-spacing: 0.12em; color: var(--on-forest-mute); }
+.nd-title { font: 650 24px/1.15 var(--font-display); letter-spacing: -0.02em; }
+.nd-time { align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: rgba(127, 199, 157, 0.16); color: #9FD4B4; font: 500 13px/1 var(--font-mono); }
+.nd-next { font: 400 14px/1.4 var(--font-body); color: var(--on-forest-mute); margin-top: auto; }
+.nd-link {
+    align-self: flex-start; background: none; border: 1px solid var(--on-forest-line); color: var(--on-forest);
+    padding: 8px 14px; border-radius: 999px; font: 500 14px/1 var(--font-body); cursor: pointer;
+}
+.nd-link:hover { background: rgba(255, 255, 255, 0.06); }
+.nd-link:focus-visible, .sv-close:focus-visible { outline: 2px solid #7FC79D; outline-offset: 2px; }
+.nd-text { overflow-y: auto; padding-right: 12px; max-width: 78ch; }
+.nd-text p, .sv-entry p { font: 400 19px/1.6 var(--font-body); }
+.nd-text p + p, .sv-entry p + p { margin-top: 12px; }
+.nd-text .cue { color: #9FD4B4; font-style: italic; font-size: 16px; }
+@media (max-width: 640px) {
+    .notes-drawer { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .nd-meta { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .nd-next { display: none; }
+}
+
+/* ===========================================
+   FULL SCRIPT VIEW (#script, or "Full script")
+   A readable page for a phone or second screen.
+   =========================================== */
+.script-view {
+    position: fixed; inset: 0; z-index: 1200; overflow-y: auto;
+    background: var(--paper); color: var(--ink);
+    padding-block: 0 80px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sv-inner { max-width: 720px; margin: 0 auto; }
+.sv-head {
+    position: sticky; top: 0; z-index: 2; background: var(--paper);
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding-block: calc(18px + env(safe-area-inset-top, 0px)) 18px; border-bottom: 1px solid var(--line);
+}
+.sv-head .wm { font: 700 28px/1 var(--font-display); letter-spacing: -0.04em; color: var(--forest); }
+.sv-head .wm i { font-style: normal; color: var(--leaf); }
+.sv-close { background: var(--forest); color: #fff; border: 0; border-radius: 999px; padding: 10px 18px; font: 600 15px/1 var(--font-body); cursor: pointer; }
+.sv-intro { padding-block: 36px 12px; }
+.sv-intro h1 { font: 700 44px/1.05 var(--font-display); letter-spacing: -0.035em; color: var(--ink); text-wrap: balance; }
+.sv-intro p { font: 400 18px/1.55 var(--font-body); color: var(--mute); margin-top: 14px; }
+.sv-entry { padding-block: 28px; border-bottom: 1px solid var(--line); }
+.sv-entry header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.sv-entry .n { font: 500 14px/1 var(--font-mono); color: var(--leaf); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+.sv-entry h2 { font: 650 26px/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); }
+.sv-entry .t { margin-left: auto; font: 500 13px/1 var(--font-mono); color: var(--mute); }
+.sv-entry p { color: var(--ink); font-size: 18px; }
+.sv-entry .cue { color: var(--leaf); font-style: italic; font-size: 16px; }
+@media (max-width: 480px) { .sv-intro h1 { font-size: 34px; } }
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+<!-- ===================== 1. TITLE ===================== -->
+<section class="slide s-title paper-grid" data-label="Introduction">
+    <div class="glow"></div>
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Chrome extension for macOS</p>
+        <h1 class="wordmark reveal" style="--d:1; margin-top: 60px">amend<i>.</i></h1>
+        <p class="tag reveal" style="--d:2">See a change. Make it happen.</p>
+        <div class="keys-wrap reveal" style="--d:3">
+            <div class="keys">
+                <div class="kbd press" style="--k:0">⌘</div>
+                <div class="kbd press" style="--k:1">⇧</div>
+                <div class="kbd press" style="--k:2">6</div>
+            </div>
+            <p class="keys-cap">Press it on any flyer, email or group chat.</p>
+        </div>
+        <div class="meta reveal" style="--d:4">
+            <span>Local open-weight vision AI</span>
+            <span>Google Calendar</span>
+            <span>Five-hour build</span>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== 2. PROBLEM ===================== -->
+<section class="slide s-problem" data-label="The problem">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">The problem</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px; max-width: 1450px">Plans change in places your calendar never sees.</h2>
+        <div class="sources">
+            <div class="reveal" style="--d:2">
+                <p class="src-label">Flyer</p>
+                <div class="flyer">
+                    <p class="f-top">ENGINEERING CLUB PRESENTS</p>
+                    <p class="f-title">Robotics Workshop</p>
+                    <div class="f-row"><span><b>Nov 12</b></span><span><b>3 PM</b></span><span>Engineering Lab</span></div>
+                </div>
+            </div>
+            <div class="reveal" style="--d:3">
+                <p class="src-label">Group chat</p>
+                <div class="chat">
+                    <div class="bubble"><span class="who">Maya · ACM</span>Tech Night is now at 5:30, same place!</div>
+                    <div class="bubble me">wait, not 4?</div>
+                </div>
+            </div>
+            <div class="reveal" style="--d:4">
+                <p class="src-label">Email</p>
+                <div class="mail">
+                    <p class="from">Engineering Club</p>
+                    <p class="subj">Workshop update</p>
+                    <p class="txt">Unfortunately, the Robotics Workshop has been cancelled.</p>
+                </div>
+            </div>
+        </div>
+        <p class="after-note reveal" style="--d:5">Today you retype each one by hand. <b>Or you don't, and show up at the wrong time.</b></p>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 3. THE INTERACTION ===================== -->
+<section class="slide dark s-flow" data-label="The interaction">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">The whole interaction</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">One shortcut.</h2>
+        <div class="keys reveal" style="--d:2">
+            <div class="kbd press" style="--k:0">⌘</div>
+            <div class="kbd press" style="--k:1">⇧</div>
+            <div class="kbd press" style="--k:2">6</div>
+        </div>
+        <div class="steps">
+            <div class="reveal" style="--d:3"><p class="n">01</p><p class="t">Capture</p><p class="d">Grabs the visible Chrome tab. No uploading.</p></div>
+            <div class="reveal" style="--d:4"><p class="n">02</p><p class="t">Understand</p><p class="d">A local vision model reads the event and what changed.</p></div>
+            <div class="reveal" style="--d:5"><p class="n">03</p><p class="t">Confirm</p><p class="d">You review the exact change in a side panel.</p></div>
+            <div class="reveal" style="--d:6"><p class="n">04</p><p class="t">Done</p><p class="d">Google Calendar updates, with a link to the event.</p></div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 4. THREE ACTIONS ===================== -->
+<section class="slide" data-label="Three actions">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Scope</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">Three actions. Nothing else.</h2>
+        <div class="actions">
+            <div class="act reveal" style="--d:2">
+                <p class="verb">Create</p>
+                <p class="api">events.insert</p>
+                <q>Robotics Workshop, November 12, 3 PM, Engineering Lab.</q>
+                <p class="res">Checks for duplicates, then adds the event.</p>
+            </div>
+            <div class="act reveal" style="--d:3">
+                <p class="verb">Update</p>
+                <p class="api">events.patch</p>
+                <q>Robotics Workshop is now at 5 PM instead of 3 PM.</q>
+                <p class="res">Finds your event and changes only the time.</p>
+            </div>
+            <div class="act del reveal" style="--d:4">
+                <p class="verb">Delete</p>
+                <p class="api">events.delete</p>
+                <q>Unfortunately, the Robotics Workshop has been cancelled.</q>
+                <p class="res">Shows the exact event, then waits for you.</p>
+            </div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 5. UPDATE REVIEW ===================== -->
+<section class="slide s-review paper-grid" data-label="Review">
+    <div class="frame">
+        <div class="left">
+            <p class="eyebrow reveal" style="--d:0">The review panel</p>
+            <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">You see exactly what will change.</h2>
+            <div class="points">
+                <div class="point reveal" style="--d:2"><span class="g">⇄</span><span><b>Before and after</b>, side by side.</span></div>
+                <div class="point reveal" style="--d:3"><span class="g">“</span><span><b>The sentence it read</b>, quoted as evidence.</span></div>
+                <div class="point reveal" style="--d:4"><span class="g">=</span><span><b>Unchanged fields stay untouched.</b> A missing location never erases yours.</span></div>
+            </div>
+        </div>
+        <div class="panel reveal-scale" style="--d:2">
+            <div class="panel-head"><span class="wm">amend<i>.</i></span><span class="pill">Connected</span></div>
+            <p class="kicker">Change detected</p>
+            <p class="ev-title">ACM Tech Night</p>
+            <div class="compare">
+                <div class="box"><p class="lbl">BEFORE</p><p class="t"><span class="strike">4:00 PM</span></p><p class="d">Fri, November 6</p></div>
+                <div class="arrow">→</div>
+                <div class="box after"><p class="lbl">AFTER</p><p class="t"><span class="pop">5:30 PM</span></p><p class="d">Fri, November 6</p></div>
+            </div>
+            <p class="unchanged">Unchanged: title, location, description</p>
+            <div class="why"><p class="lbl">WHY AMEND SUGGESTED THIS</p><q>Tech Night is now at 5:30, same place!</q></div>
+            <div class="btn">Approve update</div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 6. AMBIGUITY + DELETE ===================== -->
+<section class="slide" data-label="When it isn't sure">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Human in the loop</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">When it isn't sure, it asks.</h2>
+        <div class="pair">
+            <div class="reveal" style="--d:2">
+                <div class="panel">
+                    <p class="kicker warn">Two events match</p>
+                    <p class="ev-title">Which one moved?</p>
+                    <p class="ev-meta">“The ACM event is moving to 7 PM.”</p>
+                    <div class="radio-list">
+                        <div class="radio on"><span class="dot"></span><div><p class="n">ACM Tech Night</p><p class="m">Fri Nov 6 · 4:00 PM</p></div></div>
+                        <div class="radio"><span class="dot"></span><div><p class="n">ACM Tech Talk: Local LLMs</p><p class="m">Fri Nov 6 · 6:30 PM</p></div></div>
+                    </div>
+                    <div class="btn">Continue with Tech Night</div>
+                </div>
+                <p class="cap"><b>Similar titles are never enough.</b> Two plausible matches means you choose.</p>
+            </div>
+            <div class="reveal" style="--d:3">
+                <div class="panel">
+                    <p class="kicker del">Cancellation · confirmed</p>
+                    <p class="ev-title">Robotics Workshop</p>
+                    <p class="ev-meta">Thu Nov 12 · 3:00 PM · Engineering Lab</p>
+                    <div class="why" style="border-top: 0; padding-top: 0"><q>Unfortunately, the Robotics Workshop has been cancelled.</q></div>
+                    <div class="check"><span class="box2">✓</span>Delete this exact event</div>
+                    <div class="btn del">Delete event</div>
+                </div>
+                <p class="cap"><b>Deletes need a second, explicit step.</b> “May be cancelled” is flagged for review.</p>
+            </div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 7. ARCHITECTURE ===================== -->
+<section class="slide" data-label="Architecture">
+    <div class="frame" style="bottom: auto">
+        <p class="eyebrow reveal" style="--d:0">Architecture</p>
+        <h2 class="h-md reveal" style="--d:1; margin-top: 24px">A Chrome extension and a local AI service.</h2>
+    </div>
+    <div class="arch">
+        <svg viewBox="0 0 1920 1080" aria-hidden="true">
+            <defs>
+                <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M0,0 L10,5 L0,10 z" fill="#287B54"></path>
+                </marker>
+            </defs>
+            <path class="wire" d="M400 640 L474 640" marker-end="url(#ah)"></path>
+            <path class="wire" d="M800 640 L874 640" marker-end="url(#ah)"></path>
+            <path class="wire" d="M1240 540 L1414 540" marker-end="url(#ah)"></path>
+            <text class="wl" x="1256" y="524">screenshot</text>
+            <path class="wire" d="M1414 590 L1246 590" marker-end="url(#ah)"></path>
+            <text class="wl" x="1256" y="622">proposal</text>
+            <path class="wire dash" d="M1240 790 L1414 790" marker-end="url(#ah)"></path>
+            <text class="wl" x="1250" y="774">after approval</text>
+        </svg>
+        <div class="node reveal" style="--d:2; left: 140px; top: 560px; width: 260px; height: 160px">
+            <p class="k">Trigger</p><p class="n">⌘⇧6</p><p class="d">or the toolbar icon</p>
+        </div>
+        <div class="node reveal" style="--d:3; left: 480px; top: 540px; width: 320px; height: 200px">
+            <p class="k">Service worker</p><p class="n">Capture</p><p class="d">Opens the panel, grabs the visible tab</p>
+        </div>
+        <div class="node hero reveal" style="--d:4; left: 880px; top: 470px; width: 360px; height: 340px">
+            <p class="k">Side panel · React</p><p class="n">You decide</p>
+            <ul><li>Google sign-in</li><li>Calendar search</li><li>Review and approve</li><li>Writes to Calendar</li></ul>
+        </div>
+        <div class="mac-zone reveal" style="--d:5; left: 1420px; top: 300px; width: 380px; height: 330px">
+            <p class="zl">On your Mac · 127.0.0.1</p>
+            <div class="chain">
+                <div>FastAPI <span>:47615</span></div>
+                <div>Ollama <span>runtime</span></div>
+                <div>Qwen3-VL-4B <span>model</span></div>
+            </div>
+        </div>
+        <div class="node reveal" style="--d:6; left: 1420px; top: 700px; width: 380px; height: 180px">
+            <p class="k">Google</p><p class="n">Calendar API</p><p class="d">insert · patch · delete</p>
+        </div>
+    </div>
+    <div class="arch-foot reveal" style="--d:7">
+        <div>Your Google token never leaves the extension.</div>
+        <div>The model never calls Google.</div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 8. STATEMENT: SEPARATION ===================== -->
+<section class="slide dark" data-label="The rule">
+    <div class="frame">
+        <div class="statement">
+            <p class="eyebrow reveal" style="--d:0">The one rule</p>
+            <h2 class="h-xl reveal" style="--d:1">The AI understands.<br><span class="split-word">The extension acts.</span></h2>
+            <p class="lede reveal" style="--d:2">The model can only return a description of an event. It has no way to touch your calendar. Every change is a button you pressed.</p>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 9. THE MODEL ===================== -->
+<section class="slide paper-grid" data-label="The model">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Open-weight vision model</p>
+        <h2 class="model-name reveal" style="--d:1">Qwen3-VL<span>-4B</span></h2>
+        <div class="facts">
+            <div class="reveal" style="--d:2"><p class="v">≈3.3 GB</p><p class="l">quantized download</p></div>
+            <div class="reveal" style="--d:3"><p class="v">Apache-2.0</p><p class="l">model license; AMEND's code is MIT</p></div>
+            <div class="reveal" style="--d:4"><p class="v">Local</p><p class="l">runs in Ollama on your Mac</p></div>
+            <div class="reveal" style="--d:5"><p class="v">No paid API</p><p class="l">no account, no per-scan cost</p></div>
+        </div>
+        <div class="term reveal" style="--d:6">
+            <div><span class="p">$</span> brew install ollama</div>
+            <div><span class="p">$</span> ollama pull qwen3-vl:4b-instruct</div>
+            <div class="c"># kept warm for 30 min, 90 s timeout per scan</div>
+        </div>
+        <p class="fallback reveal" style="--d:7"><b>Too slow on your Mac?</b> Swap in a smaller open vision model like <span class="mono">qwen2.5vl:3b</span>, never a proprietary API.</p>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 10. TIME ===================== -->
+<section class="slide" data-label="Dates and times">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">The hard part</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">“Now at 5 PM” has no date.</h2>
+        <div class="time-row">
+            <div class="quote-card reveal" style="--d:2"><small>THE ANNOUNCEMENT</small>Tech Night is now at 5 PM.</div>
+            <div class="arrow reveal" style="--d:3">→</div>
+            <pre class="json reveal" style="--d:3">{
+  <span class="k">"date"</span>: <span class="nul">null</span>,
+  <span class="k">"start_time"</span>: <span class="s">"17:00"</span>,
+  <span class="k">"year_visible"</span>: <span class="nul">false</span>
+}</pre>
+            <div class="arrow reveal" style="--d:4">→</div>
+            <div class="resolved reveal" style="--d:4"><small>MERGED WITH YOUR EVENT</small><p class="t">Fri Nov 6, 5:00 PM</p><p class="z">2026-11-06T17:00:00-06:00</p></div>
+        </div>
+        <div class="rules">
+            <div class="reveal" style="--d:5"><p class="t">The model never guesses</p><p class="d">Unknown dates come back as null. The date is taken from the event it matches.</p></div>
+            <div class="reveal" style="--d:6"><p class="t">Your Mac sets the timezone</p><p class="d">The model returns plain local times. The backend adds the offset, so the Nov 1 DST change is handled.</p></div>
+            <div class="reveal" style="--d:7"><p class="t">Years are inferred safely</p><p class="d">“November 12” means the next November 12 after the capture date.</p></div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 11. MATCHING ===================== -->
+<section class="slide" data-label="Matching">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Updates and deletes</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">Finding the right event.</h2>
+        <div class="funnel">
+            <div class="reveal" style="--d:2">
+                <div class="vis"><div class="dotgrid" id="dots250"></div></div>
+                <div class="fcap"><p class="v">Up to 250</p><p class="l">events from the next 90 days</p></div>
+            </div>
+            <div class="arrow reveal" style="--d:3">→</div>
+            <div class="reveal" style="--d:3">
+                <div class="vis"><div class="dotgrid five"><i></i><i></i><i></i><i></i><i></i></div></div>
+                <div class="fcap"><p class="v">Top 5</p><p class="l">scored by <span class="mono">title 60 · date 25 · place 15</span></p></div>
+            </div>
+            <div class="arrow reveal" style="--d:4">→</div>
+            <div class="reveal" style="--d:4">
+                <div class="vis" style="padding-left: 34px"><div class="onedot"></div></div>
+                <div class="fcap"><p class="v">One match</p><p class="l">close calls go to the local model</p></div>
+            </div>
+        </div>
+        <p class="match-foot reveal" style="--d:5"><b>The chosen ID must be in the list it was given.</b> If not, or if two are close, you pick.</p>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 12. GUARDRAILS ===================== -->
+<section class="slide paper-grid" data-label="Guardrails">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Safety</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">Built to touch a real calendar.</h2>
+        <div class="guards">
+            <div class="guard reveal" style="--d:2"><p class="if">Approve is clicked twice</p><p class="then">One event is created</p><p class="how">client-supplied event ID</p></div>
+            <div class="guard reveal" style="--d:3"><p class="if">The event changed since you reviewed it</p><p class="then">The write is blocked</p><p class="how">If-Match etag · 412 → re-review</p></div>
+            <div class="guard reveal" style="--d:4"><p class="if">The screenshot says “delete everything”</p><p class="then">It's just text</p><p class="how">output locked to an event schema</p></div>
+            <div class="guard reveal" style="--d:5"><p class="if">A website calls the local AI</p><p class="then">Refused</p><p class="how">Origin check + X-Amend-Client header</p></div>
+            <div class="guard reveal" style="--d:6"><p class="if">The event has invitees</p><p class="then">Nobody is emailed</p><p class="how">sendUpdates=none</p></div>
+            <div class="guard reveal" style="--d:7"><p class="if">It's a weekly series</p><p class="then">Only this occurrence</p><p class="how">singleEvents=true instance IDs</p></div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 13. PRIVACY ===================== -->
+<section class="slide dark" data-label="Privacy">
+    <div class="frame">
+        <div class="statement" style="top: 40px">
+            <p class="eyebrow reveal" style="--d:0">Privacy</p>
+            <h2 class="h-xl reveal" style="--d:1">Your screenshot never leaves your Mac.</h2>
+        </div>
+        <div class="priv">
+            <div class="reveal" style="--d:2"><p class="t">Local inference</p><p class="d">The model runs in Ollama on your machine.</p></div>
+            <div class="reveal" style="--d:3"><p class="t">Localhost only</p><p class="d">The AI service listens on 127.0.0.1, not the network.</p></div>
+            <div class="reveal" style="--d:4"><p class="t">No tokens in prompts</p><p class="d">Your Google sign-in never reaches the model.</p></div>
+            <div class="reveal" style="--d:5"><p class="t">Calendar data goes to Google</p><p class="d">Approved changes are sent through the Calendar API, as with any calendar app.</p></div>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 14. FIVE-HOUR BUILD ===================== -->
+<section class="slide" data-label="The build">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">The plan</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">Five hours, risk first.</h2>
+        <!-- widths: 30 min = 164px, 45 min = 246px (1640px total minus gaps) -->
+        <div class="timeline reveal" style="--d:2">
+            <div class="tl-ticks">
+                <div style="width:160px">0:00</div><div style="width:242px">0:30</div><div style="width:242px">1:15</div><div style="width:242px">2:00</div><div style="width:242px">2:45</div><div style="width:242px">3:30</div><div style="width:242px">4:15</div>
+            </div>
+            <div class="tl-bar">
+                <div class="crit" style="width:160px">30m</div>
+                <div style="width:242px">45m</div>
+                <div class="crit" style="width:242px">45m</div>
+                <div class="crit" style="width:242px">45m</div>
+                <div style="width:242px">45m</div>
+                <div style="width:242px">45m</div>
+                <div style="width:242px">45m</div>
+            </div>
+            <div class="tl-labels">
+                <div class="crit" style="width:160px"><p class="t">Model</p><p class="d">Real screenshot through Qwen3-VL</p></div>
+                <div style="width:242px"><p class="t">Shortcut</p><p class="d">MV3 extension, capture, side panel</p></div>
+                <div class="crit" style="width:242px"><p class="t">Extraction</p><p class="d">Structured output, dates, intent</p></div>
+                <div class="crit" style="width:242px"><p class="t">Google</p><p class="d">OAuth, insert, patch, delete</p></div>
+                <div style="width:242px"><p class="t">Matching</p><p class="d">Find events, approval, errors</p></div>
+                <div style="width:242px"><p class="t">Polish</p><p class="d">Before/after, motion, states</p></div>
+                <div style="width:242px"><p class="t">Ship</p><p class="d">Three live demos, repo, video</p></div>
+            </div>
+        </div>
+        <p class="crit-note reveal" style="--d:3"><span class="sw"></span><span><b>Validate the model and Google sign-in first.</b> Mock modes let the rest be built in parallel without either.</span></p>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 15. DEMO ===================== -->
+<section class="slide paper-grid" data-label="Live demo">
+    <div class="frame">
+        <p class="eyebrow reveal" style="--d:0">Live demo</p>
+        <h2 class="h-lg reveal" style="--d:1; margin-top: 28px">Three scenes, one calendar.</h2>
+        <div class="scenes">
+            <div class="scene reveal" style="--d:2">
+                <p class="n">SCENE 1</p><p class="t">Create</p>
+                <ol><li><span>Open the <b>Robotics Workshop</b> flyer</span></li><li><span>Press <b>⌘⇧6</b> and review the fields</span></li><li><span>Approve, then show it in <b>Google Calendar</b></span></li></ol>
+            </div>
+            <div class="scene reveal" style="--d:3">
+                <p class="n">SCENE 2</p><p class="t">Update</p>
+                <ol><li><span>Open the <b>“now at 5:30”</b> message</span></li><li><span>AMEND finds <b>ACM Tech Night</b></span></li><li><span>Approve the <b>before/after</b>; the event moves</span></li></ol>
+            </div>
+            <div class="scene del reveal" style="--d:4">
+                <p class="n">SCENE 3</p><p class="t">Delete</p>
+                <ol><li><span>Open the <b>cancellation</b> email</span></li><li><span>Confirm <b>this exact event</b></span></li><li><span>It's gone from the calendar</span></li></ol>
+            </div>
+        </div>
+        <div class="demo-foot reveal" style="--d:5">
+            <span>Real local model</span><span>Real Google Calendar</span><span>Test calendar, made-up events</span>
+        </div>
+    </div>
+    <div class="foot"><span class="mark">amend<i>.</i></span><span class="pg"></span></div>
+</section>
+
+<!-- ===================== 16. CLOSE ===================== -->
+<section class="slide dark s-close" data-label="Close">
+    <div class="frame">
+        <h2 class="wordmark reveal" style="--d:0">amend<i>.</i></h2>
+        <p class="closing reveal" style="--d:1">AMEND turns everyday announcements into calendar actions.</p>
+        <p class="closing-2 reveal" style="--d:2">It understands what changed, finds the right event, and makes the update with your approval, powered by an open-weight model running on your Mac.</p>
+        <div class="credits reveal" style="--d:3">
+            <span>Open source · MIT</span><span>Qwen3-VL-4B-Instruct · Apache-2.0</span><span>Ollama · FastAPI · Chrome MV3</span>
+        </div>
+    </div>
+</section>
+
+</main>
+</div>
+
+<div class="progress" id="progress"></div>
+<nav class="deck-controls" id="controls" aria-label="Slide controls">
+    <button type="button" id="prevBtn" aria-label="Previous slide">←</button>
+    <span class="count" id="count">1 / 16</span>
+    <button type="button" id="nextBtn" aria-label="Next slide">→</button>
+    <button type="button" class="wide" id="notesBtn" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+</nav>
+
+<!-- ===========================================
+     SPEAKER NOTES DRAWER
+     =========================================== -->
+<aside class="notes-drawer" id="notesDrawer" aria-label="Speaker notes" hidden>
+    <div class="nd-meta">
+        <p class="nd-num" id="ndNum"></p>
+        <p class="nd-title" id="ndTitle"></p>
+        <span class="nd-time" id="ndTime"></span>
+        <button type="button" class="nd-link" id="openScript">Full script</button>
+        <p class="nd-next" id="ndNext"></p>
+    </div>
+    <div class="nd-text" id="ndText"></div>
+</aside>
+
+<!-- ===========================================
+     FULL SCRIPT VIEW
+     =========================================== -->
+<div class="script-view" id="scriptView" role="dialog" aria-label="Presenter script" hidden>
+    <div class="sv-inner">
+        <div class="sv-head"><span class="wm">amend<i>.</i></span><button type="button" class="sv-close" id="closeScript">Back to slides</button></div>
+        <div class="sv-intro">
+            <h1>Presenter script</h1>
+            <p id="svSummary"></p>
+        </div>
+        <div id="svList"></div>
+    </div>
+</div>
+
+<!-- ===========================================
+     SCRIPT DATA: one entry per slide, in order.
+     data-sec is the target speaking time. Lines with class "cue" are
+     stage directions, not spoken. Edit the words here to change both views.
+     =========================================== -->
+<template id="notesData">
+    <div data-sec="15">
+        <p>Hi, we're building AMEND. The idea fits in one line: see a change, make it happen.</p>
+        <p>You press one shortcut on anything that announces an event, and your Google Calendar catches up.</p>
+    </div>
+    <div data-sec="25">
+        <p>Think about where plans actually change. A flyer on a club page. A group chat saying Tech Night moved to 5:30. An email saying the workshop is cancelled.</p>
+        <p>None of these talk to your calendar. So either you retype every detail by hand, or you don't, and you show up at the wrong time.</p>
+    </div>
+    <div data-sec="25">
+        <p>AMEND turns that into one shortcut: Command, Shift, 6.</p>
+        <p>It captures the Chrome tab you're looking at. A vision model running on your own Mac reads it and works out what changed. A small side panel asks you to confirm, and Google Calendar updates.</p>
+        <p>Shortcut, analysis, confirm, done.</p>
+    </div>
+    <div data-sec="20">
+        <p>We kept the scope tight on purpose. Three actions.</p>
+        <p>Create a new event from a flyer. Update an event when something moves. Delete an event when it's cancelled. Each one is a single Google Calendar API call.</p>
+    </div>
+    <div data-sec="30">
+        <p>This is the moment that matters. Before anything changes, you see a before and after: 4 PM becomes 5:30.</p>
+        <p>Underneath, AMEND quotes the exact sentence it read, so you can check its reasoning in a second.</p>
+        <p>And anything the message didn't mention stays as it is. If it doesn't say where, we never wipe your location.</p>
+    </div>
+    <div data-sec="25">
+        <p>When AMEND isn't sure, it asks. If two events could match, like Tech Night and Tech Talk on the same evening, you pick. A similar title alone is never enough.</p>
+        <p>Deletes take a second, explicit step. And a message that only says something "may be cancelled" is flagged for you to review.</p>
+    </div>
+    <div data-sec="30">
+        <p>There are two parts under the hood.</p>
+        <p>A Chrome extension handles the shortcut, the screenshot, your Google sign-in, and every calendar change.</p>
+        <p>A small service on your Mac, FastAPI with Ollama running Qwen3-VL, does the image understanding.</p>
+        <p>Your Google token never leaves the extension, and the model never talks to Google.</p>
+    </div>
+    <div data-sec="15">
+        <p>That gives us one rule we never break. The AI understands. The extension acts.</p>
+        <p>The model can only describe an event. Every change to your calendar is a button you pressed.</p>
+    </div>
+    <div data-sec="20">
+        <p>The model is Qwen3-VL 4B, an open-weight vision model. About 3.3 gigabytes, Apache-2.0 licensed, running locally in Ollama.</p>
+        <p>No paid API and no cost per scan. Setup is two commands.</p>
+    </div>
+    <div data-sec="30">
+        <p>The hardest part isn't reading the text. It's time. "Now at 5 PM" has no date.</p>
+        <p>So the model is never allowed to guess. It returns the date as empty and the time as 17:00, and we take the date from the event it matches.</p>
+        <p>The model also gives plain local times, and our backend adds the timezone. That matters here, because daylight saving ends on November 1st, right before our demo events.</p>
+    </div>
+    <div data-sec="25">
+        <p>To find the right event, we pull up to 250 events from the next 90 days and score each one on title, date, and place. The top five go forward.</p>
+        <p>If two are close, the local model breaks the tie. Its answer has to be an event from the list we gave it. If it isn't, or it's still close, you choose.</p>
+    </div>
+    <div data-sec="25">
+        <p>Because this touches a real calendar, we built in guardrails.</p>
+        <p>Click approve twice and you still get one event. If the event changed after you reviewed it, the change is blocked. If a screenshot says "delete everything," it's just text, because the model can only output an event description.</p>
+        <p>Other websites can't call the local AI, invitees don't get emailed, and a weekly event only changes the one occurrence.</p>
+    </div>
+    <div data-sec="15">
+        <p>And your screenshot never leaves your Mac. The model runs locally, the service only listens on your own machine, and your Google sign-in never reaches the model.</p>
+        <p>The only thing sent to Google is the change you approved.</p>
+    </div>
+    <div data-sec="20">
+        <p>We planned this as a five-hour build, risk first.</p>
+        <p>The two things that could sink us, running the model locally and Google sign-in, get proven in the first stretch. Mock modes let us build everything else in parallel without them.</p>
+    </div>
+    <div data-sec="15">
+        <p>Let's see it. Three scenes, one test calendar with made-up events.</p>
+        <p class="cue">Switch to Chrome. Scene 1: open the Robotics Workshop flyer, press Command-Shift-6. Point out the title, date, time, and place it found, and that the end time is marked as a guess. Approve, then click through to Google Calendar.</p>
+        <p class="cue">Scene 2: open the "now at 5:30" message, press the shortcut. Point out that it found ACM Tech Night and shows the before and after. Approve and show the event moved.</p>
+        <p class="cue">Scene 3: open the cancellation email, press the shortcut. Tick "Delete this exact event", delete, and show it's gone.</p>
+        <p class="cue">If Command-Shift-6 doesn't fire, use the backup shortcut, Control-Shift-E.</p>
+    </div>
+    <div data-sec="15">
+        <p>AMEND turns everyday announcements into calendar actions.</p>
+        <p>It understands what changed, finds the right event, and makes the update with your approval, powered by an open-weight model running on your Mac.</p>
+        <p>Thank you. Happy to take questions.</p>
+    </div>
+</template>
+
+<script>
+/* ===========================================
+   DOT GRID: 250 dots for the matching slide (drawn to scale)
+   =========================================== */
+(function () {
+    const g = document.getElementById('dots250');
+    let html = '';
+    for (let i = 0; i < 250; i++) html += '<i></i>';
+    g.innerHTML = html;
+})();
+
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Keyboard, wheel, touch and click navigation; stage scaling;
+   page numbers in each slide footer; #N in the link opens slide N.
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = Array.from(document.querySelectorAll('.slide'));
+        this.stage = document.getElementById('deckStage');
+        this.progress = document.getElementById('progress');
+        this.count = document.getElementById('count');
+        this.current = 0;
+        this.lastWheel = 0;
+        this.numberFooters();
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupWheelNav();
+        this.setupTouchNav();
+        this.setupButtons();
+        this.setupNotes();
+        const hash = (location.hash || '').replace('#', '');
+        const fromHash = parseInt(hash, 10);
+        this.show(Number.isFinite(fromHash) ? fromHash - 1 : 0);
+        if (hash === 'script') this.openScript(false);
+    }
+
+    numberFooters() {
+        const total = String(this.slides.length).padStart(2, '0');
+        this.slides.forEach((s, i) => {
+            const pg = s.querySelector('.pg');
+            if (pg) pg.textContent = `${s.dataset.label || ''}   ${String(i + 1).padStart(2, '0')} / ${total}`;
+        });
+    }
+
+    setupStageScale() {
+        // Fit the stage into the window, minus the notes drawer when it is open
+        this.rescale = () => {
+            const drawer = document.getElementById('notesDrawer');
+            const w = window.innerWidth;
+            const h = window.innerHeight - (drawer.hidden ? 0 : drawer.offsetHeight);
+            const f = Math.min(w / 1920, h / 1080);
+            const x = (w - 1920 * f) / 2;
+            const y = (h - 1080 * f) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+        };
+        this.rescale();
+        window.addEventListener('resize', this.rescale);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (this.scriptOpen) { if (e.key === 'Escape') this.closeScript(); return; }
+            if (e.key === 'n' || e.key === 'N') { this.toggleNotes(); return; }
+            if (e.key === 'Escape' && this.notesOpen) { this.toggleNotes(false); return; }
+            // let Space/Enter press a focused button instead of changing slides
+            if ((e.key === ' ' || e.key === 'Enter') && e.target.closest && e.target.closest('button')) return;
+            if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); this.next(); }
+            else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); this.prev(); }
+            else if (e.key === 'Home') this.show(0);
+            else if (e.key === 'End') this.show(this.slides.length - 1);
+        });
+    }
+
+    setupWheelNav() {
+        window.addEventListener('wheel', (e) => {
+            if (this.scriptOpen || e.target.closest('.notes-drawer')) return;
+            const now = Date.now();
+            if (now - this.lastWheel < 700 || Math.abs(e.deltaY) < 24) return;
+            this.lastWheel = now;
+            e.deltaY > 0 ? this.next() : this.prev();
+        }, { passive: true });
+    }
+
+    setupTouchNav() {
+        let sx = 0, sy = 0;
+        window.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+        window.addEventListener('touchend', (e) => {
+            if (this.scriptOpen || e.target.closest('.notes-drawer, .deck-controls')) return;
+            const dx = e.changedTouches[0].clientX - sx;
+            const dy = e.changedTouches[0].clientY - sy;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) dx < 0 ? this.next() : this.prev();
+            else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+                // tap: right two-thirds advances, left third goes back
+                e.changedTouches[0].clientX > window.innerWidth / 3 ? this.next() : this.prev();
+            }
+        }, { passive: true });
+    }
+
+    setupButtons() {
+        document.getElementById('prevBtn').addEventListener('click', () => this.prev());
+        document.getElementById('nextBtn').addEventListener('click', () => this.next());
+        const controls = document.getElementById('controls');
+        let t = null;
+        window.addEventListener('mousemove', () => {
+            controls.classList.add('show');
+            clearTimeout(t);
+            t = setTimeout(() => controls.classList.remove('show'), 1800);
+        });
+    }
+
+    /* ---- Speaker notes and full script ---- */
+    setupNotes() {
+        const pad = (n) => String(n).padStart(2, '0');
+        this.pad = pad;
+        this.notes = Array.from(document.getElementById('notesData').content.children);
+        this.drawer = document.getElementById('notesDrawer');
+        this.scriptView = document.getElementById('scriptView');
+        this.notesOpen = false;
+        this.scriptOpen = false;
+        document.getElementById('notesBtn').addEventListener('click', () => this.toggleNotes());
+        document.getElementById('openScript').addEventListener('click', () => this.openScript(true));
+        document.getElementById('closeScript').addEventListener('click', () => this.closeScript());
+
+        // Build the full script once from the same data
+        const total = this.notes.reduce((s, n) => s + Number(n.dataset.sec || 0), 0);
+        document.getElementById('svSummary').textContent =
+            `${this.slides.length} slides, about ${Math.round(total / 60)} minutes of speaking plus the live demo. ` +
+            `Lines in green italics are stage directions. Press N during the deck to see each slide's part.`;
+        const list = document.getElementById('svList');
+        this.notes.forEach((n, i) => {
+            const art = document.createElement('article');
+            art.className = 'sv-entry';
+            const head = document.createElement('header');
+            head.innerHTML = `<span class="n">${pad(i + 1)}</span><h2></h2><span class="t">~${n.dataset.sec} s</span>`;
+            head.querySelector('h2').textContent = this.slides[i] ? this.slides[i].dataset.label : '';
+            art.appendChild(head);
+            n.querySelectorAll('p').forEach((p) => art.appendChild(p.cloneNode(true)));
+            list.appendChild(art);
+        });
+    }
+
+    toggleNotes(force) {
+        this.notesOpen = typeof force === 'boolean' ? force : !this.notesOpen;
+        this.drawer.hidden = !this.notesOpen;
+        document.body.classList.toggle('notes-open', this.notesOpen);
+        document.getElementById('notesBtn').setAttribute('aria-pressed', String(this.notesOpen));
+        this.rescale();
+        this.renderNotes();
+    }
+
+    renderNotes() {
+        if (!this.notesOpen) return;
+        const i = this.current;
+        const n = this.notes[i];
+        const label = (k) => (this.slides[k] ? this.slides[k].dataset.label : '');
+        document.getElementById('ndNum').textContent = `SLIDE ${this.pad(i + 1)} / ${this.pad(this.slides.length)}`;
+        document.getElementById('ndTitle').textContent = label(i);
+        document.getElementById('ndTime').textContent = n ? `~${n.dataset.sec} s` : '';
+        document.getElementById('ndNext').textContent = i + 1 < this.slides.length ? `Next: ${label(i + 1)}` : 'Last slide';
+        const text = document.getElementById('ndText');
+        text.innerHTML = '';
+        if (n) n.querySelectorAll('p').forEach((p) => text.appendChild(p.cloneNode(true)));
+        text.scrollTop = 0;
+    }
+
+    openScript(scrollToCurrent) {
+        this.scriptOpen = true;
+        this.scriptView.hidden = false;
+        const entry = document.getElementById('svList').children[this.current];
+        if (scrollToCurrent && entry) entry.scrollIntoView({ block: 'start' });
+        else this.scriptView.scrollTop = 0;
+        document.getElementById('closeScript').focus({ preventScroll: true });
+    }
+
+    closeScript() {
+        this.scriptOpen = false;
+        this.scriptView.hidden = true;
+        document.getElementById('notesBtn').focus({ preventScroll: true });
+    }
+
+    next() { this.show(this.current + 1); }
+    prev() { this.show(this.current - 1); }
+
+    show(i) {
+        this.current = Math.max(0, Math.min(i, this.slides.length - 1));
+        this.slides.forEach((s, n) => {
+            const on = n === this.current;
+            s.classList.toggle('active', on);
+            s.classList.toggle('visible', on);
+            s.setAttribute('aria-hidden', on ? 'false' : 'true');
+        });
+        this.progress.style.width = `${((this.current + 1) / this.slides.length) * 100}%`;
+        this.count.textContent = `${this.current + 1} / ${this.slides.length}`;
+        if (this.notes) this.renderNotes();
+    }
+}
+
+new SlidePresentation();
+</script>
+</body>
+</html>
