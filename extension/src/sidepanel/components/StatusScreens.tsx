@@ -37,7 +37,7 @@ export function ErrorState({ error, onRetry, onBack }: { error: PanelError; onRe
       <p className="text-[13px] leading-relaxed text-muted-foreground">{error.message}</p>
       {error.kind === 'backend' && /isn't running|offline/i.test(error.message + error.title) && (
         <pre className="overflow-x-auto rounded-lg bg-muted px-3 py-2 text-left text-[11.5px] leading-relaxed text-foreground/80">
-          {'ollama serve\ncd backend && uv run python -m app.main'}
+          {'# in the Amend folder, then keep it open\nmake up'}
         </pre>
       )}
       <div className="flex gap-2">
