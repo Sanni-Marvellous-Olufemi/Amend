@@ -42,6 +42,21 @@ def test_relative_dates():
     d, reason = resolve_relative("next Friday", ref)
     assert d == date(2026, 11, 6) and reason
     assert resolve_relative("in a fortnight-ish", ref)[1]
+    assert resolve_relative("Friday's", ref) == (ref, None)
+    assert resolve_relative("tomorrow night", ref) == (date(2026, 10, 31), None)
+
+
+def test_echoed_timestamp_is_not_a_relative_date():
+    # Seen from qwen3-vl: it copied the capture time into relative_date_phrase.
+    assert resolve_relative("Friday, October 30, 2026 at 16:00 (America/Chicago)", date(2026, 10, 30)) == (None, None)
+    mp = ModelProposal(
+        intent="UPDATE",
+        event=ModelEvent(title="Tech Night", start_time="17:30", relative_date_phrase="Friday, October 30, 2026 at 16:00"),
+        changed_fields=["start_time"],
+        evidence="Tech Night is now at 5:30 PM",
+    )
+    p = normalize(mp, CAPTURED, TZ)
+    assert p.partial.date is None and p.start is None and not p.needs_review
 
 
 def test_create_defaults_end_and_marks_inferred():

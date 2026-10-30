@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from app.schemas import Candidate, ModelEvent, ModelProposal, PartialFields, Proposal, TieBreakOutput
 from app.services.normalize import normalize
-from app.services.reconcile import decide, rank
+from app.services.reconcile import decide, needs_tie_break, rank
 
 TZ = "America/Chicago"
 
@@ -94,3 +94,10 @@ def test_model_agreement_keeps_single():
     ok = TieBreakOutput(chosen_id="evt_101", confident=True, reason="same title and day")
     result = decide("op", ranked, {c.id for c in CANDIDATES}, ok)
     assert result.decision == "single" and result.chosen_id == "evt_101"
+
+
+def test_model_is_only_consulted_when_ranking_is_close():
+    clear = rank(proposal(title="Tech Night", changed_fields=["start_time"], partial=PartialFields(start_time="17:30")), CANDIDATES)
+    assert not needs_tie_break(clear)
+    close = rank(proposal(title="ACM event", location="Siebel Center 1404", changed_fields=["location"]), CANDIDATES)
+    assert needs_tie_break(close)

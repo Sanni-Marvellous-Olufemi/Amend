@@ -57,6 +57,8 @@ ollama serve                         # leave running
 ollama pull qwen3-vl:4b-instruct     # ~3.3 GB
 ```
 
+On Apple Silicon or a GPU, a screenshot takes a few seconds. On a CPU-only machine (4 cores, no GPU) it takes about 30–70 s once the model is warm, and up to about 2 minutes for the first call. The side panel shows a running timer, and the timeouts can be raised with `AMEND_TIMEOUT_S` (backend) and `VITE_ANALYZE_TIMEOUT_MS` (extension).
+
 On a Mac that struggles with the 4B model, try a smaller vision model and set `OLLAMA_MODEL` in `backend/.env` (for example `qwen2.5vl:3b`). Keep it open-weight.
 
 ### 2. Pin the extension ID
