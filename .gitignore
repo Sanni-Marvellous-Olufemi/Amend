@@ -1,0 +1,28 @@
+# Secrets and keys
+.env
+.env.*
+!.env.example
+*.pem
+extension/key.pem
+
+# Node / build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Model weights and private data
+*.gguf
+*.safetensors
+private/
+*.ics
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
