@@ -17,6 +17,16 @@ from ..schemas import ModelEvent, ModelProposal, PartialFields, Proposal
 WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 _TIME_RE = re.compile(r"^\s*(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)?\s*$", re.IGNORECASE)
 _DATE_RE = re.compile(r"^\s*(\d{4})-(\d{1,2})-(\d{1,2})\s*$")
+_MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?"
+# Any way a date can be written in announcement text. Months need a day next to them so
+# "may be cancelled" doesn't count.
+_DATE_TEXT_RE = re.compile(
+    rf"\b{_MONTH}\s+\d{{1,2}}\b|\b\d{{1,2}}(?:st|nd|rd|th)?\s+(?:of\s+)?{_MONTH}"
+    r"|\b(?:mon|tues|wednes|thurs|fri|satur|sun)days?\b"
+    r"|\b(?:today|tonight|tomorrow|this\s+(?:morning|afternoon|evening))\b"
+    r"|\b\d{1,2}/\d{1,2}\b|\b\d{4}-\d{2}-\d{2}\b",
+    re.IGNORECASE,
+)
 MAX_FUTURE_DAYS = 730
 MAX_PAST_DAYS = 30
 
@@ -86,7 +96,21 @@ def combine(d: date, t: time, tz: ZoneInfo) -> datetime:
     return datetime.combine(d, t).replace(tzinfo=tz)
 
 
-def _resolve_event_date(ev: ModelEvent, reference: date, reasons: list[str]) -> date | None:
+def mentions_date(text: str) -> bool:
+    return bool(_DATE_TEXT_RE.search(text))
+
+
+def _resolve_event_date(ev: ModelEvent, reference: date, reasons: list[str], evidence: str) -> date | None:
+    resolved = _model_date(ev, reference, reasons)
+    # When the text only gives a time ("now at 5:30"), small vision models fill in the capture
+    # day, either in `date` or by copying the capture time from the prompt into
+    # `relative_date_phrase`. A date on the capture day must be backed by the quoted text.
+    if resolved == reference and not mentions_date(evidence):
+        return None
+    return resolved
+
+
+def _model_date(ev: ModelEvent, reference: date, reasons: list[str]) -> date | None:
     parsed = parse_date(ev.date)
     if parsed is not None:
         if ev.year_visible:
@@ -129,7 +153,7 @@ def normalize(
     inferred: list[str] = []
 
     ev = mp.event
-    ev_date = _resolve_event_date(ev, reference, reasons)
+    ev_date = _resolve_event_date(ev, reference, reasons, evidence)
     start_t = parse_time(ev.start_time)
     end_t = parse_time(ev.end_time)
     if ev.start_time and start_t is None:
@@ -183,7 +207,7 @@ def normalize(
     previous_hint = None
     if mp.previous is not None:
         prev_reasons: list[str] = []
-        prev_date = _resolve_event_date(mp.previous, reference, prev_reasons)
+        prev_date = _resolve_event_date(mp.previous, reference, prev_reasons, evidence)
         prev_start = parse_time(mp.previous.start_time)
         previous_hint = PartialFields(
             date=prev_date.isoformat() if prev_date else None,

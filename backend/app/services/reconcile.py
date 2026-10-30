@@ -1,8 +1,8 @@
 """Match an UPDATE/DELETE proposal to existing calendar events.
 
 Deterministic scoring decides; the model can only make a result *less* certain
-(by disagreeing) or reorder close candidates. It can never pick an ID that was
-not in the candidate list.
+(by naming a different event) or reorder close candidates. It can never pick an ID
+that was not in the candidate list.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ def _parse_start(value: str, tz: ZoneInfo) -> tuple[date, str | None]:
     return dt.date(), dt.strftime("%H:%M")
 
 
-def _reference(proposal: Proposal) -> tuple[date | None, str | None]:
+def reference_for(proposal: Proposal) -> tuple[date | None, str | None]:
     """Best guess at the *existing* event's date and start time."""
     prev = proposal.previous_hint
     ref_date: date | None = None
@@ -68,7 +68,7 @@ def score_candidate(proposal: Proposal, cand: Candidate, tz: ZoneInfo) -> Ranked
     title_score = title_similarity(proposal.title or "", cand.title)
     reasons.append(f"title {round(title_score * 100)}% similar")
 
-    ref_date, ref_time = _reference(proposal)
+    ref_date, ref_time = reference_for(proposal)
     cand_date, cand_time = _parse_start(cand.start, tz)
     if ref_date is None:
         date_score = 0.5
@@ -129,7 +129,11 @@ def decide(
     top = max(ranked, key=lambda r: r.score)
     runner_up = sorted((r.score for r in ranked), reverse=True)[1] if len(ranked) > 1 else 0.0
     clear = top.score - runner_up >= CLEAR_GAP
-    model_disagrees = tie_break is not None and (llm_choice is None or llm_choice != top.id or not tie_break.confident)
+    # A clear winner stands unless the model names a different event or an unknown ID.
+    # "Not sure" alone doesn't overrule it: qwen3-vl:4b answers that even for exact matches.
+    hallucinated = tie_break is not None and tie_break.chosen_id is not None and llm_choice is None
+    picks_other = llm_choice is not None and llm_choice != top.id
+    model_disagrees = hallucinated or picks_other
 
     if clear and not model_disagrees:
         return MatchResponse(

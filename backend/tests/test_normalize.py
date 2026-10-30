@@ -2,7 +2,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from app.schemas import ModelEvent, ModelProposal
-from app.services.normalize import infer_year, normalize, parse_time, resolve_relative
+from app.services.normalize import infer_year, mentions_date, normalize, parse_time, resolve_relative
 
 TZ = "America/Chicago"
 CAPTURED = datetime(2026, 10, 30, 15, 0, tzinfo=ZoneInfo(TZ))  # a Friday
@@ -106,6 +106,66 @@ def test_tentative_cancellation_needs_review():
     )
     p = normalize(mp, CAPTURED, TZ)
     assert p.needs_review
+
+
+def echoed_update(evidence: str) -> ModelProposal:
+    # What qwen3-vl actually returned for the reschedule demo: today's date in both events.
+    return ModelProposal(
+        intent="UPDATE",
+        event=ModelEvent(title="Tech Night", date="2026-10-30", year_visible=False, start_time="17:30"),
+        previous=ModelEvent(date="2026-10-30", year_visible=False, start_time="16:00"),
+        changed_fields=["start_time"],
+        evidence=evidence,
+    )
+
+
+def test_capture_date_echo_is_dropped_when_text_has_no_date():
+    p = normalize(echoed_update("Tech Night is now at 5:30 PM instead of 4:00, same place!"), CAPTURED, TZ)
+    assert p.partial.date is None and p.previous_hint.date is None
+    assert p.start is None
+    assert p.previous_hint.start_time == "16:00"
+    assert p.changed_fields == ["start_time"] and not p.needs_review
+
+
+def test_capture_time_copied_into_relative_phrase_is_dropped():
+    # The other shape qwen3-vl returned: no date, but the prompt's capture time as a "relative" phrase.
+    mp = ModelProposal(
+        intent="UPDATE",
+        event=ModelEvent(
+            title="Tech Night",
+            start_time="17:30",
+            relative_date_phrase="Friday, October 30, 2026 at 16:00 (America/Chicago)",
+        ),
+        previous=ModelEvent(start_time="16:00"),
+        changed_fields=["start_time"],
+        evidence="Schedule change: Tech Night is now at 5:30 PM instead of 4:00, same place!",
+    )
+    p = normalize(mp, CAPTURED, TZ)
+    assert p.partial.date is None and not p.needs_review
+
+
+def test_capture_date_kept_when_text_says_so():
+    p = normalize(echoed_update("Tech Night tonight is now at 5:30 PM instead of 4:00"), CAPTURED, TZ)
+    assert p.partial.date == "2026-10-30"
+    explicit = ModelProposal(
+        intent="CREATE",
+        event=ModelEvent(title="Bake sale", date="2026-10-30", year_visible=False, start_time="15:00"),
+        evidence="Bake sale Oct 30, 3 PM",
+    )
+    assert normalize(explicit, CAPTURED, TZ).start == "2026-10-30T15:00:00-05:00"
+
+
+def test_create_with_echoed_date_asks_for_a_date():
+    p = normalize(create(title="Bake sale", date="2026-10-30", year_visible=False, start_time="15:00"), CAPTURED, TZ)
+    assert p.needs_review
+    assert any("No date found" in r for r in p.review_reasons)
+
+
+def test_mentions_date():
+    for text in ["Nov 6, 4 PM", "6th of November", "this Friday", "on 11/6", "2026-11-06", "tomorrow at noon"]:
+        assert mentions_date(text), text
+    for text in ["now at 5:30 PM instead of 4:00", "Picnic may be cancelled", "same place!"]:
+        assert not mentions_date(text), text
 
 
 def test_none_and_empty_are_dropped():

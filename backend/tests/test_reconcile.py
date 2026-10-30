@@ -1,4 +1,8 @@
-from app.schemas import Candidate, PartialFields, Proposal, TieBreakOutput
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from app.schemas import Candidate, ModelEvent, ModelProposal, PartialFields, Proposal, TieBreakOutput
+from app.services.normalize import normalize
 from app.services.reconcile import decide, rank
 
 TZ = "America/Chicago"
@@ -30,6 +34,23 @@ def test_clear_match_with_previous_time():
     assert result.chosen_id == "evt_101"
 
 
+def test_reschedule_with_echoed_capture_date_still_matches():
+    # The real model put today's date (Oct 30) on "now at 5:30 instead of 4:00". Normalizing
+    # must drop it, or matching scores Tech Night as "7 days apart".
+    mp = ModelProposal(
+        intent="UPDATE",
+        event=ModelEvent(title="Tech Night", date="2026-10-30", year_visible=False, start_time="17:30"),
+        previous=ModelEvent(date="2026-10-30", year_visible=False, start_time="16:00"),
+        changed_fields=["start_time"],
+        evidence="Tech Night is now at 5:30 PM instead of 4:00, same place!",
+    )
+    p = normalize(mp, datetime(2026, 10, 30, 15, 0, tzinfo=ZoneInfo(TZ)), TZ)
+    ranked = rank(p, CANDIDATES)
+    assert "apart" not in ranked[0].reason
+    result = decide("op", ranked, {c.id for c in CANDIDATES}, None)
+    assert result.decision == "single" and result.chosen_id == "evt_101"
+
+
 def test_similar_titles_are_ambiguous():
     p = proposal(title="ACM event", location="Siebel Center 1404", changed_fields=["location"])
     ranked = rank(p, CANDIDATES)
@@ -51,6 +72,20 @@ def test_hallucinated_tie_break_id_is_ignored_and_forces_review():
     result = decide("op", ranked, {c.id for c in CANDIDATES}, bogus)
     assert result.decision == "ambiguous"
     assert result.chosen_id is None
+
+
+def test_unsure_tie_break_does_not_overrule_clear_match():
+    p = proposal(intent="DELETE", title="ACM Tech Night", partial=PartialFields(date="2026-11-06"))
+    unsure = TieBreakOutput(chosen_id=None, confident=False, reason="several are plausible")
+    result = decide("op", rank(p, CANDIDATES), {c.id for c in CANDIDATES}, unsure)
+    assert result.decision == "single" and result.chosen_id == "evt_101"
+
+
+def test_tie_break_naming_another_event_forces_review():
+    p = proposal(intent="DELETE", title="ACM Tech Night", partial=PartialFields(date="2026-11-06"))
+    other = TieBreakOutput(chosen_id="evt_103", confident=False, reason="maybe the talk")
+    result = decide("op", rank(p, CANDIDATES), {c.id for c in CANDIDATES}, other)
+    assert result.decision == "ambiguous" and result.chosen_id is None
 
 
 def test_model_agreement_keeps_single():

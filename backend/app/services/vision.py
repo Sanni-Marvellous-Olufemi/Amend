@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from ..config import settings
 from ..schemas import Candidate, ModelOutput, Proposal, TieBreakOutput
 from .prompts import ANALYZE_SYSTEM, TIEBREAK_SYSTEM, analyze_user_prompt
+from .reconcile import reference_for
 
 log = logging.getLogger("amend.vision")
 
@@ -128,13 +129,17 @@ class OllamaClient:
                 raise ModelError("The model returned an unreadable answer", status=422) from exc2
 
     async def tie_break(self, proposal: Proposal, candidates: list[Candidate]) -> TieBreakOutput | None:
+        # Candidates hold the event's current values, so send what we know about those, not the
+        # new ones: given "now at 5:30 instead of 4:00", the model looked for an event at 5:30.
+        ref_date, ref_time = reference_for(proposal)
         announcement = {
             "intent": proposal.intent,
             "title": proposal.title,
-            "new_date": proposal.partial.date,
-            "new_start_time": proposal.partial.start_time,
-            "previous": proposal.previous_hint.model_dump() if proposal.previous_hint else None,
-            "location": proposal.location,
+            "existing": {
+                "date": ref_date.isoformat() if ref_date else None,
+                "start_time": ref_time,
+                "location": proposal.location if "location" not in proposal.changed_fields else None,
+            },
             "evidence": proposal.evidence,
         }
         body = json.dumps(
