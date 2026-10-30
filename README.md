@@ -43,6 +43,10 @@ make extension         # builds extension/dist (uses the demo calendar when no O
 
 Then go to `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select `extension/dist`. Open http://127.0.0.1:47616 and press **⌘⇧6** on a scenario.
 
+Shortcut: `cd extension && npm run chrome` opens a separate Chrome window with AMEND already installed. Recent Chrome versions ignore the `--load-extension` flag, so this uses Chrome's debugging protocol instead.
+
+If you are driving a **Linux** machine (for example a remote desktop) from a Mac, ⌘ arrives as the Super key, which Linux Chrome doesn't allow in extension shortcuts. Press **Control+Shift+6** there instead, or click the AMEND toolbar icon.
+
 ## Full setup
 
 ### 1. Local model (Ollama + Qwen3-VL)

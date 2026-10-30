@@ -24,11 +24,13 @@ export function Header({ connected, mock, onDisconnect, onHome, showHome }: Prop
       </button>
       <div className="flex items-center gap-1.5">
         {mock && (
-          <span className="rounded-full bg-warn-soft px-2 py-0.5 text-[11px] font-medium text-warn">Demo calendar</span>
+          <span className="hidden rounded-full bg-warn-soft px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-warn min-[360px]:inline">
+            Demo calendar
+          </span>
         )}
         <span
           className={cn(
-            'flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium',
+            'flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium whitespace-nowrap',
             connected ? 'bg-leaf-soft text-forest' : 'bg-muted text-muted-foreground',
           )}
         >
