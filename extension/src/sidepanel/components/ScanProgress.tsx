@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,16 @@ const STEPS: { key: string; label: string; phases: Phase[] }[] = [
   { key: 'read', label: 'Reading the announcement', phases: ['ANALYZING'] },
   { key: 'match', label: 'Checking your calendar', phases: ['MATCHING', 'NEEDS_AUTH'] },
 ]
+
+function useElapsedSeconds(phase: Phase) {
+  const [tick, setTick] = useState({ phase, elapsed: 0 })
+  useEffect(() => {
+    const started = Date.now()
+    const id = setInterval(() => setTick({ phase, elapsed: Math.floor((Date.now() - started) / 1000) }), 1000)
+    return () => clearInterval(id)
+  }, [phase])
+  return tick.phase === phase ? tick.elapsed : 0
+}
 
 export function ScanProgress({
   phase,
@@ -24,6 +35,7 @@ export function ScanProgress({
   children?: React.ReactNode
 }) {
   const current = STEPS.findIndex((s) => s.phases.includes(phase))
+  const elapsed = useElapsedSeconds(phase)
 
   return (
     <div className="space-y-4">
@@ -67,10 +79,20 @@ export function ScanProgress({
                 {done ? <Check className="size-3" /> : active ? <Loader2 className="size-3 animate-spin" /> : <span className="size-1.5 rounded-full bg-current" />}
               </span>
               <span className={cn(active ? 'font-medium text-foreground' : 'text-muted-foreground')}>{step.label}</span>
+              {active && phase !== 'NEEDS_AUTH' && elapsed >= 3 && (
+                <span className="ml-auto text-[12px] text-muted-foreground tabular-nums">{elapsed}s</span>
+              )}
             </motion.li>
           )
         })}
       </ol>
+
+      {phase === 'ANALYZING' && elapsed >= 15 && (
+        <p className="rounded-xl bg-muted/70 px-3.5 py-2.5 text-[12px] leading-relaxed text-muted-foreground">
+          The model runs entirely on this computer. On machines without a GPU, reading a screenshot can take a couple
+          of minutes.
+        </p>
+      )}
 
       {children}
 

@@ -66,12 +66,17 @@ def resolve_relative(phrase: str | None, reference: date) -> tuple[date | None, 
     """Resolve simple relative phrases. Returns (date, review_reason)."""
     if not phrase:
         return None, None
-    p = phrase.strip().lower()
-    if p in {"today", "tonight", "this evening", "this afternoon", "this morning"}:
+    p = re.sub(r"[^\w\s']", " ", phrase.lower())
+    p = " ".join(re.sub(r"'s\b", "", p).split())
+    if re.search(r"\d", p):
+        # Digits mean an absolute date or a time slipped in; that belongs in `date`, not here.
+        return None, None
+    p = re.sub(r"\s+(morning|afternoon|evening|night)$", "", p)
+    if p in {"today", "tonight", "this"}:
         return reference, None
-    if p == "tomorrow" or p.startswith("tomorrow "):
+    if p == "tomorrow":
         return reference + timedelta(days=1), None
-    m = re.match(r"^(this|next|on)?\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b", p)
+    m = re.fullmatch(r"(this|next|on|coming|this coming)?\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)", p)
     if m:
         qualifier, weekday = m.group(1), WEEKDAYS.index(m.group(2))
         delta = (weekday - reference.weekday()) % 7

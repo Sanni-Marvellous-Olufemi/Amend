@@ -117,7 +117,7 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         if settings.mock:
             output = await mock_analyze(req.source_hint)
         else:
-            output = await client.analyze(req.image_b64, captured_at.astimezone(tz), req.timezone)
+            output = await client.analyze(req.image_b64)
     except ModelError as exc:
         raise HTTPException(exc.status, str(exc)) from exc
 
@@ -145,7 +145,7 @@ async def match(req: MatchRequest) -> MatchResponse:
     ranked = reconcile.rank(req.proposal, req.candidates)
     valid_ids = {c.id for c in req.candidates}
     tie_break = None
-    if ranked and not settings.mock and len(ranked) > 1:
+    if not settings.mock and reconcile.needs_tie_break(ranked):
         top_ids = {r.id for r in ranked}
         tie_break = await client.tie_break(req.proposal, [c for c in req.candidates if c.id in top_ids])
     result = reconcile.decide(req.op_id, ranked, valid_ids, tie_break)

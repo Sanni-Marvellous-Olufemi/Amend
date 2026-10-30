@@ -104,6 +104,13 @@ def rank(proposal: Proposal, candidates: list[Candidate]) -> list[RankedCandidat
     return [r for r in scored if r.score >= MIN_SCORE * 0.6][:TOP_N]
 
 
+def needs_tie_break(ranked: list[RankedCandidate]) -> bool:
+    """Only consult the model when the deterministic ranking is genuinely close."""
+    if len(ranked) < 2 or ranked[0].score < MIN_SCORE:
+        return False
+    return ranked[1].score >= MIN_SCORE and ranked[0].score - ranked[1].score < CLEAR_GAP
+
+
 def decide(
     op_id: str,
     ranked: list[RankedCandidate],

@@ -12,7 +12,8 @@ export const MOCK_CALENDAR: boolean = env.VITE_MOCK_CALENDAR === '1' || (!hasChr
 
 export const USER_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-export const ANALYZE_TIMEOUT_MS = 120_000
-export const MATCH_TIMEOUT_MS = 60_000
+// Generous because CPU-only inference can take ~2 minutes per screenshot; Apple-silicon GPUs take seconds.
+export const ANALYZE_TIMEOUT_MS = Number(env.VITE_ANALYZE_TIMEOUT_MS) || 300_000
+export const MATCH_TIMEOUT_MS = Number(env.VITE_MATCH_TIMEOUT_MS) || 180_000
 export const MAX_IMAGE_EDGE = 1600
 export const CANDIDATE_WINDOW_DAYS = 90

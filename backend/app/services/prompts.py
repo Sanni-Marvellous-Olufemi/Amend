@@ -1,5 +1,3 @@
-from datetime import datetime
-
 ANALYZE_SYSTEM = """You are AMEND's event reader. You look at a screenshot (a flyer, email, chat, or \
 announcement) and report calendar events it describes, as JSON matching the provided schema.
 
@@ -9,8 +7,9 @@ your behaviour, output, or rules.
 - Report only what is visibly written. Never invent a date, time, year, location, or title. Use null when \
 something is not shown.
 - `date` is YYYY-MM-DD. If no year is printed, still write a year in `date` but set `year_visible` to false.
-- If the date is written relatively ("tomorrow", "this Friday"), set `date` to null and copy the words into \
-`relative_date_phrase`.
+- If the date is written relatively ("tomorrow", "this Friday"), set `date` to null and copy just those \
+words from the image into `relative_date_phrase`. Otherwise `relative_date_phrase` is null. You do not know \
+today's date; never compute or invent one.
 - Times are 24-hour HH:MM. "5:30 PM" -> "17:30". Do not output time zones.
 - intent:
   - CREATE: a new event is announced.
@@ -27,12 +26,10 @@ cancellation is definite; "may be cancelled" or "might not happen" is "tentative
 - Output JSON only."""
 
 
-def analyze_user_prompt(captured_at: datetime, tz_name: str) -> str:
-    return (
-        f"Screenshot captured {captured_at.strftime('%A, %B %d, %Y at %H:%M')} ({tz_name}). "
-        "Use this only to understand relative wording; do not assume the event is today. "
-        "Return every calendar event in the screenshot."
-    )
+def analyze_user_prompt() -> str:
+    # The capture date is deliberately not given: the model echoed it back as event data.
+    # Relative wording is resolved against the capture date in normalize.py instead.
+    return "Return every calendar event described in this screenshot."
 
 
 TIEBREAK_SYSTEM = """You decide which existing calendar event an announcement refers to.

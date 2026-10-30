@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime
-
 import httpx
 from pydantic import ValidationError
 
@@ -98,12 +96,12 @@ class OllamaClient:
             raise ModelError(f"Ollama returned HTTP {res.status_code}")
         return res.json().get("message", {}).get("content", "")
 
-    async def analyze(self, image_b64: str, captured_at: datetime, tz_name: str) -> ModelOutput:
+    async def analyze(self, image_b64: str) -> ModelOutput:
         messages: list[dict] = [
             {"role": "system", "content": ANALYZE_SYSTEM},
             {
                 "role": "user",
-                "content": analyze_user_prompt(captured_at, tz_name),
+                "content": analyze_user_prompt(),
                 "images": [strip_data_url(image_b64)],
             },
         ]

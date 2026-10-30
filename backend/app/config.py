@@ -34,7 +34,8 @@ class Settings:
     # Empty means "accept any chrome-extension:// origin" (local development only).
     extension_id: str = os.getenv("AMEND_EXTENSION_ID", "").strip()
     mock: bool = _bool("AMEND_MOCK")
-    timeout_s: float = float(os.getenv("AMEND_TIMEOUT_S", "90"))
+    # Apple-silicon GPUs answer in seconds; CPU-only machines can take ~2 minutes per screenshot.
+    timeout_s: float = float(os.getenv("AMEND_TIMEOUT_S", "240"))
     max_body_bytes: int = int(os.getenv("AMEND_MAX_BODY_BYTES", str(12 * 1024 * 1024)))
     default_duration_min: int = int(os.getenv("AMEND_DEFAULT_DURATION_MIN", "60"))
 
