@@ -1,4 +1,10 @@
-.PHONY: setup backend backend-mock extension extension-watch demo test key assets
+.PHONY: up up-mock setup backend backend-mock extension extension-watch demo test key assets
+
+up: ## Install everything, start Ollama + model, build the extension, run demo + AI service
+	scripts/run-local.sh
+
+up-mock: ## Same as up, with canned answers instead of the model
+	scripts/run-local.sh --mock
 
 setup: ## Install backend and extension dependencies
 	cd backend && uv sync

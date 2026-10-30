@@ -29,6 +29,17 @@ demo/        four synthetic announcements (HTML + PNG) for the live demo
 scripts/     gen-extension-key.sh (pin the extension ID), render-assets.sh (icons + demo PNGs)
 ```
 
+## Run everything with one command
+
+```bash
+git clone https://github.com/Sanni-Marvellous-Olufemi/Amend.git && cd Amend
+make up          # or: scripts/run-local.sh
+```
+
+This installs anything missing (Homebrew: python, node, uv, ollama), starts Ollama, downloads `qwen3-vl:4b-instruct` once (~3.3 GB), builds the extension, and runs the demo pages and the AI service in that terminal. Ctrl+C stops everything it started. Use `make up-mock` to skip the model and use canned answers.
+
+Then load `extension/dist` once via `chrome://extensions` → Developer mode → Load unpacked, open http://127.0.0.1:47616, and press **⌘⇧6**.
+
 ## Quick start (no Google or Ollama needed)
 
 Mock mode runs the entire flow with canned model answers and an in-browser demo calendar. Use it to try the UI first.
