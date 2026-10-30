@@ -117,7 +117,9 @@ export function useAmend() {
       const stored = await getSelectedCalendar()
       const chosen = stored && list.some((c) => c.id === stored) ? stored : (list.find((c) => !c.primary)?.id ?? list[0]?.id ?? 'primary')
       setCalendarId(chosen)
-      if (!stored) await setSelectedCalendar(chosen)
+      // Also replace a stored ID that no longer exists (e.g. the demo calendar's, after connecting
+      // Google): scans and writes read the stored ID, and Google answers 404 for an unknown calendar.
+      if (chosen !== stored) await setSelectedCalendar(chosen)
     } catch (err) {
       if (err instanceof AuthError || (err instanceof CalendarError && err.status === 401)) setConnected(false)
     }
