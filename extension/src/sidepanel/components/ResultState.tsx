@@ -1,9 +1,23 @@
 import { motion } from 'motion/react'
 import { ArrowRight, Check, ExternalLink, MinusCircle, ScanLine } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MOCK_CALENDAR } from '@/services/config'
 import type { ReviewItem } from '../machine'
 
-const VERB = { created: 'Added to your calendar', updated: 'Event updated', deleted: 'Event deleted' } as const
+const VERB = MOCK_CALENDAR
+  ? ({ created: 'Added to the demo calendar', updated: 'Demo event updated', deleted: 'Demo event deleted' } as const)
+  : ({ created: 'Added to your calendar', updated: 'Event updated', deleted: 'Event deleted' } as const)
+
+// Demo events only exist inside AMEND, so a Google Calendar link would show a day without them.
+const calendarLink = (link: string | null | undefined) => (MOCK_CALENDAR ? null : link)
+
+function DemoNote() {
+  return (
+    <p className="mx-auto max-w-[30ch] text-[12.5px] leading-snug text-muted-foreground">
+      Demo mode: this wasn't sent to Google Calendar. Add a Google OAuth client ID to save real events.
+    </p>
+  )
+}
 
 function SuccessMark() {
   return (
@@ -34,6 +48,7 @@ export function ItemResultView({ item, onNext }: { item: ReviewItem; onNext?: ()
     )
   }
   const result = item.result!
+  const link = calendarLink(result.link)
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
@@ -46,9 +61,10 @@ export function ItemResultView({ item, onNext }: { item: ReviewItem; onNext?: ()
         <p className="mt-0.5 truncate text-[13px] text-muted-foreground">{result.title}</p>
       </div>
       <div className="flex flex-col items-center gap-1.5">
-        {result.link && (
+        {MOCK_CALENDAR && <DemoNote />}
+        {link && (
           <Button asChild variant="outline" size="sm" className="rounded-lg">
-            <a href={result.link} target="_blank" rel="noreferrer">
+            <a href={link} target="_blank" rel="noreferrer">
               Open in Google Calendar <ExternalLink />
             </a>
           </Button>
@@ -83,8 +99,8 @@ export function DoneScreen({ items, onScanAgain }: { items: ReviewItem[]; onScan
               <li key={i.proposal.proposal_id} className="flex items-center justify-between gap-2 py-2">
                 <span className="truncate">{i.result?.title || i.proposal.title || 'Untitled'}</span>
                 {i.status === 'done' && i.result ? (
-                  i.result.link ? (
-                    <a href={i.result.link} target="_blank" rel="noreferrer" className="shrink-0 font-medium text-leaf hover:underline">
+                  calendarLink(i.result.link) ? (
+                    <a href={calendarLink(i.result.link)!} target="_blank" rel="noreferrer" className="shrink-0 font-medium text-leaf hover:underline">
                       {i.result.action}
                     </a>
                   ) : (
@@ -96,6 +112,7 @@ export function DoneScreen({ items, onScanAgain }: { items: ReviewItem[]; onScan
               </li>
             ))}
           </ul>
+          {MOCK_CALENDAR && done.length > 0 && <DemoNote />}
         </div>
       )}
       <Button variant="secondary" className="h-10 w-full rounded-xl" onClick={onScanAgain}>
