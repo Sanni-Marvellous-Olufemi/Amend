@@ -13,6 +13,16 @@ Shortcut  →  local AI reads the screenshot  →  match against your calendar  
 - **Safe updates.** Only the fields the announcement changed are patched. Durations are preserved, and writes use `If-Match` etags so a stale review can't overwrite newer edits.
 - **Safe deletes.** You see the exact event and must tick a confirmation. Ambiguous matches always ask you to choose.
 
+## Pitch deck
+
+[`presentation/index.html`](presentation/index.html) is the 16-slide hackathon pitch, with no build step. Open it in a browser:
+
+```bash
+open presentation/index.html
+```
+
+Use the arrow keys or Space to move between slides. Press **N** to show the speaker notes under the current slide. Add `#script` to the URL to read the whole script as one page, for example on your phone. Add `#5` to jump to slide 5.
+
 ## Repository layout
 
 ```
@@ -26,6 +36,7 @@ extension/   Chrome MV3 extension (React + TypeScript + Tailwind + shadcn/ui + M
   src/sidepanel/              state machine (useAmend.ts, machine.ts) and UI
   src/services/               auth, Google Calendar REST client, demo calendar, backend client
 demo/        four synthetic announcements (HTML + PNG) for the live demo
+presentation/  pitch deck (single HTML file, speaker notes included)
 scripts/     gen-extension-key.sh (pin the extension ID), render-assets.sh (icons + demo PNGs)
 ```
 
